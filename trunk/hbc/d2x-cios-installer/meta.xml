@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes'?><app version="1">
+	<name>D2x cIOS installer</name>
+	<coder>dragbe</coder>
+	<version>2</version>
+	<short_description>Custom IOS installer</short_description>
+	<long_description>Official Homebrew to install d2x cIOS maintained by davebaol, xabby666 and XFlak.</long_description>
+	<release_date>1307966400</release_date>
+	<arguments>
+        <!-- <arg>--ios=249</arg> -->
+    </arguments>
+</app>
