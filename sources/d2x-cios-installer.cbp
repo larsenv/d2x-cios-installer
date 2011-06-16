@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="d2x-cios-installer" />
+		<Option makefile_is_custom="1" />
+		<Option pch_mode="2" />
+		<Option compiler="wii_compiler" />
+		<MakeCommands>
+			<Build command="$make -f $makefile $target" />
+			<CompileFile command="$make -f $makefile $file" />
+			<Clean command="$make -f $makefile clean" />
+			<DistClean command="$make -f $makefile distclean$target" />
+			<AskRebuildNeeded command="$make -q -f $makefile $target" />
+			<SilentBuild command="$make -s -f $makefile $target" />
+		</MakeCommands>
+		<Build>
+			<Target title="binary">
+				<Option output=".elf" prefix_auto="0" extension_auto="0" />
+				<Option object_output="binary" />
+				<Option type="1" />
+				<Option compiler="wii_compiler" />
+				<Option use_console_runner="0" />
+				<ExtraCommands>
+					<Add after="wiiload d2x-cios-installer.elf" />
+				</ExtraCommands>
+				<MakeCommands>
+					<Build command="$make -f $makefile" />
+					<CompileFile command="$make -f $makefile $file" />
+					<Clean command="$make -f $makefile clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q -f $makefile $target" />
+					<SilentBuild command="$make -s -f $makefile $target" />
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-mhard-float" />
+			<Add option="-meabi" />
+			<Add option="-Wall" />
+			<Add option="-mrvl" />
+			<Add option="-mcpu=750" />
+			<Add option="-DGEKKO" />
+			<Add directory="C:\devkitPro\libogc\include" />
+			<Add directory="libs\mxml\include" />
+		</Compiler>
+		<Linker>
+			<Add option="-Wl,-Map,boot.map,--section-start,.init=0x80a00100" />
+			<Add option="-mrvl -mcpu=750" />
+			<Add option="-meabi -mhard-float" />
+			<Add directory="C:\devkitPro\libogc\lib\wii" />
+		</Linker>
+		<Unit filename="controllers.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="controllers.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="d2x-cios-installer.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="debug.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="debug.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="filesystem.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="filesystem.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="gui.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="gui.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="http.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="http.h" />
+		<Unit filename="image.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="image.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libarray.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libarray.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libfile.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libfile.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libgeometry.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libgeometry.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libios.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libios.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libmath.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libmath.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libmatrice.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libmatrice.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libstring.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libstring.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libutils.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libutils.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="menu.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="menu.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="nand.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="nand.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="network.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="network.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="nus.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="nus.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="patchmii.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="patchmii.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="pngu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="pngu.h" />
+		<Unit filename="rijndael.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="rijndael.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="sha1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="sha1.h" />
+		<Unit filename="system.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="system.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="tests.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="tests.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="title.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="title.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="video.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="video.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
