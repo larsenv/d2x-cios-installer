@@ -7,11 +7,11 @@
 	<File name="controllers.h" open="0" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="d2x-cios-installer.h" open="1" top="1" tabpos="3">
+	<File name="d2x-cios-installer.h" open="1" top="0" tabpos="2">
 		<Cursor position="106" topLine="0" />
 	</File>
 	<File name="debug.c" open="0" top="0" tabpos="8">
-		<Cursor position="509" topLine="0" />
+		<Cursor position="191" topLine="0" />
 	</File>
 	<File name="debug.h" open="0" top="0" tabpos="7">
 		<Cursor position="105" topLine="0" />
@@ -22,8 +22,8 @@
 	<File name="filesystem.h" open="0" top="0" tabpos="6">
 		<Cursor position="90" topLine="0" />
 	</File>
-	<File name="gui.c" open="0" top="0" tabpos="2">
-		<Cursor position="17519" topLine="319" />
+	<File name="gui.c" open="0" top="0" tabpos="5">
+		<Cursor position="3574" topLine="311" />
 	</File>
 	<File name="gui.h" open="0" top="0" tabpos="3">
 		<Cursor position="3409" topLine="13" />
@@ -44,22 +44,22 @@
 		<Cursor position="120" topLine="0" />
 	</File>
 	<File name="libfile.c" open="0" top="0" tabpos="7">
-		<Cursor position="2144" topLine="43" />
+		<Cursor position="4332" topLine="111" />
 	</File>
-	<File name="libfile.h" open="0" top="0" tabpos="0">
-		<Cursor position="286" topLine="0" />
+	<File name="libfile.h" open="0" top="0" tabpos="7">
+		<Cursor position="604" topLine="0" />
 	</File>
-	<File name="libgeometry.c" open="0" top="0" tabpos="6">
-		<Cursor position="1805" topLine="3" />
+	<File name="libgeometry.c" open="0" top="0" tabpos="9">
+		<Cursor position="111" topLine="0" />
 	</File>
 	<File name="libgeometry.h" open="0" top="0" tabpos="10">
 		<Cursor position="413" topLine="0" />
 	</File>
-	<File name="libios.c" open="0" top="0" tabpos="4">
-		<Cursor position="24966" topLine="262" />
+	<File name="libios.c" open="0" top="0" tabpos="6">
+		<Cursor position="31674" topLine="338" />
 	</File>
-	<File name="libios.h" open="0" top="0" tabpos="5">
-		<Cursor position="1119" topLine="18" />
+	<File name="libios.h" open="0" top="0" tabpos="8">
+		<Cursor position="1278" topLine="18" />
 	</File>
 	<File name="libmath.c" open="0" top="0" tabpos="10">
 		<Cursor position="707" topLine="0" />
@@ -85,32 +85,35 @@
 	<File name="libutils.h" open="0" top="0" tabpos="5">
 		<Cursor position="418" topLine="0" />
 	</File>
+	<File name="macro.h" open="0" top="0" tabpos="7">
+		<Cursor position="82" topLine="0" />
+	</File>
 	<File name="main.c" open="1" top="0" tabpos="1">
-		<Cursor position="2405" topLine="34" />
+		<Cursor position="12692" topLine="222" />
 	</File>
 	<File name="menu.c" open="0" top="0" tabpos="6">
 		<Cursor position="790" topLine="3" />
 	</File>
 	<File name="nand.c" open="0" top="0" tabpos="8">
-		<Cursor position="257" topLine="41" />
+		<Cursor position="1280" topLine="0" />
 	</File>
 	<File name="nand.h" open="0" top="0" tabpos="6">
 		<Cursor position="36" topLine="0" />
 	</File>
 	<File name="network.c" open="0" top="0" tabpos="6">
-		<Cursor position="210" topLine="0" />
+		<Cursor position="884" topLine="7" />
 	</File>
 	<File name="network.h" open="0" top="0" tabpos="0">
 		<Cursor position="307" topLine="0" />
 	</File>
-	<File name="nus.c" open="0" top="0" tabpos="11">
-		<Cursor position="714" topLine="0" />
+	<File name="nus.c" open="1" top="0" tabpos="3">
+		<Cursor position="1960" topLine="0" />
 	</File>
 	<File name="nus.h" open="0" top="0" tabpos="5">
 		<Cursor position="34" topLine="0" />
 	</File>
-	<File name="patchmii.c" open="1" top="0" tabpos="2">
-		<Cursor position="412" topLine="81" />
+	<File name="patchmii.c" open="1" top="0" tabpos="4">
+		<Cursor position="2552" topLine="41" />
 	</File>
 	<File name="patchmii.h" open="0" top="0" tabpos="7">
 		<Cursor position="87" topLine="0" />
@@ -137,21 +140,27 @@
 		<Cursor position="19" topLine="0" />
 	</File>
 	<File name="tests.c" open="0" top="0" tabpos="6">
-		<Cursor position="1407" topLine="46" />
+		<Cursor position="754" topLine="2" />
 	</File>
 	<File name="tests.h" open="0" top="0" tabpos="0">
 		<Cursor position="38" topLine="0" />
 	</File>
-	<File name="title.c" open="0" top="0" tabpos="7">
-		<Cursor position="8408" topLine="188" />
+	<File name="title.c" open="0" top="0" tabpos="9">
+		<Cursor position="9058" topLine="0" />
 	</File>
-	<File name="title.h" open="0" top="0" tabpos="8">
-		<Cursor position="262" topLine="0" />
+	<File name="title.h" open="0" top="0" tabpos="10">
+		<Cursor position="1232" topLine="0" />
 	</File>
-	<File name="video.c" open="1" top="0" tabpos="4">
+	<File name="video.c" open="0" top="0" tabpos="4">
 		<Cursor position="3026" topLine="21" />
 	</File>
-	<File name="video.h" open="0" top="0" tabpos="5">
-		<Cursor position="257" topLine="0" />
+	<File name="video.h" open="0" top="0" tabpos="10">
+		<Cursor position="136" topLine="0" />
+	</File>
+	<File name="wad.c" open="1" top="1" tabpos="5">
+		<Cursor position="212" topLine="0" />
+	</File>
+	<File name="wad.h" open="0" top="0" tabpos="11">
+		<Cursor position="731" topLine="7" />
 	</File>
 </CodeBlocks_layout_file>

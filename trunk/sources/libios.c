@@ -32,6 +32,7 @@
 #include "libmatrice.h"
 #include "d2x-cios-installer.h"
 #include "sha1.h"
+#include "title.h"
 #include "libfile.h"
 #if TESTING_CODE == 0
 #include "nand.h"

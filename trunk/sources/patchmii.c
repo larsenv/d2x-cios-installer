@@ -42,7 +42,7 @@ u32 intTmdSize,intTicketSize,intFreeContentId=0,intContentSize,j;
 tmd *pTmd;
 tmd_content *pTmdContent;
 char strContentId[32];
-char strNusObjectFileName[256],strNusObjectUrl[256];
+char strNusObjectFileName[256],strWadFileName[256],strNusObjectUrl[256];
 sha1 hash;
 bool blnFixTmd=false;
     intConsoleColumnsCount=getConsoleColumnsCount()-1;
@@ -55,12 +55,13 @@ bool blnFixTmd=false;
 #endif
 	snprintf(strNusObjectUrl,sizeof(strNusObjectUrl),"http://nus.cdn.shop.wii.com/ccs/download/%08x%08x/tmd.%d",intMajorTitleId,stSelectedCios->stBase.chBase,stSelectedCios->stBase.intBaseRevision);
     snprintf(strNusObjectFileName,sizeof(strNusObjectFileName),"tmd.%d",stSelectedCios->stBase.intBaseRevision);
+    snprintf(strWadFileName,sizeof(strWadFileName),"IOS%d-64-v%d.wad",stSelectedCios->stBase.chBase,stSelectedCios->stBase.intBaseRevision);
 #if TESTING_CODE
 	printDebugMsg(NORMAL_DEBUG_MESSAGE,"Getting tmd.%d file...",stSelectedCios->stBase.intBaseRevision);
 #else
 	updateProgressBar("Getting tmd.%d file...",stSelectedCios->stBase.intBaseRevision);
 #endif
-	if ((pStreamTmdBuffer=getNusObject(strCacheFolder,strNusObjectFileName,strNusObjectUrl,&intTmdSize))==NULL) {
+	if ((pStreamTmdBuffer=getNusObject(strCacheFolder,strWadFileName,strNusObjectFileName,strNusObjectUrl,&intTmdSize))==NULL) {
 		printDebugMsg(ERROR_DEBUG_MESSAGE,"\nFailed to get NUS object tmd.%d",stSelectedCios->stBase.intBaseRevision);
 		varout=1;
 	}
@@ -76,7 +77,7 @@ bool blnFixTmd=false;
             updateProgressBar("Getting cetk file...");
 #endif
             snprintf(strNusObjectUrl,sizeof(strNusObjectUrl),"http://nus.cdn.shop.wii.com/ccs/download/%08x%08x/cetk",intMajorTitleId,stSelectedCios->stBase.chBase);
-            if ((pStreamTikBuffer=getNusObject(strCacheFolder,"cetk",strNusObjectUrl,&intTicketSize))==NULL) {
+            if ((pStreamTikBuffer=getNusObject(strCacheFolder,strWadFileName,"cetk",strNusObjectUrl,&intTicketSize))==NULL) {
                 printDebugMsg(ERROR_DEBUG_MESSAGE,"\nFailed to get NUS object cetk");
                 varout=2;
             }
@@ -90,10 +91,10 @@ bool blnFixTmd=false;
 #if TESTING_CODE
                         printDebugMsg(NORMAL_DEBUG_MESSAGE," OK\n");
 #endif
-                        aes_set_key(getTitleKey(sTik,chTitleKey));
                         pTmd=(tmd*)SIGNATURE_PAYLOAD(sTmd);
-                        pTmdContent=TMD_CONTENTS(pTmd);
                         if (pTmd->title_version==stSelectedCios->stBase.intBaseRevision) {
+                            aes_set_key(getTitleKey(sTik,chTitleKey));
+                            pTmdContent=TMD_CONTENTS(pTmd);
                             if (pTmd->title_version!=intCiosRevision) {
                                 blnFixTmd=true;
                                 pTmd->title_version=intCiosRevision;
@@ -115,7 +116,7 @@ bool blnFixTmd=false;
                                 updateProgressBar("Getting %s file (%lld bytes)...",strContentId,pTmdContent[i].size);
 #endif
                                 snprintf(strNusObjectUrl,sizeof(strNusObjectUrl),"http://nus.cdn.shop.wii.com/ccs/download/%08x%08x/%s",intMajorTitleId,stSelectedCios->stBase.chBase,strContentId);
-                                if ((chCryptedContent=getNusObject(strCacheFolder,strContentId,strNusObjectUrl,&intContentSize))==NULL) {
+                                if ((chCryptedContent=getNusObject(strCacheFolder,strWadFileName,strContentId,strNusObjectUrl,&intContentSize))==NULL) {
                                     printDebugMsg(ERROR_DEBUG_MESSAGE,"\nFailed to get NUS object %s",strContentId);
                                     varout=3;
                                     break;
@@ -316,13 +317,13 @@ bool blnFixTmd=false;
                                     intConsoleRow=getConsoleRow();
                                     drawProgressBar(intConsoleRow,getConsoleColumn(),10,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_WHITE,CONSOLE_FONT_GREEN,2+pTmd->num_contents,"");
                                     updateProgressBar("Installing ticket...");
-                                    if ((intReturnValue=installTicket(sTik,sCerts,HAXX_certs_size))<0) {
+                                    if ((intReturnValue=installTicket(sTik,sCerts,HAXX_certs_size,NULL,0))<0) {
                                         printDebugMsg(ERROR_DEBUG_MESSAGE,"\ninstallTicket returned %d", intReturnValue);
                                         varout=12;
                                     }
                                     else {
                                         aes_set_key(getTitleKey(sTik,chTitleKey));
-                                        if ((intReturnValue=installTmdContents(sTmd,sCerts,HAXX_certs_size,strNandWorkFolder,true))<0) {
+                                        if ((intReturnValue=installTmdContents(sTmd,sCerts,HAXX_certs_size,NULL,0,strNandWorkFolder,true))<0) {
                                             printDebugMsg(ERROR_DEBUG_MESSAGE,"\ninstallTmdContents returned %d",intReturnValue);
                                             varout=13;
                                         }

@@ -15,7 +15,7 @@ char strModWiiCiosContentFileName[256];
     for (i=0;i<stCios->intContentsCount;i++) {
         snprintf(strPrebuildCiosContentFileName,sizeof(strPrebuildCiosContentFileName),"%s/%08x.app",strPrebuildCiosFolder,i);
         snprintf(strModWiiCiosContentFileName,sizeof(strModWiiCiosContentFileName),"%s/%08x.app",strModWiiTestFolder,stCios->stContents[i].intContentId);
-        if ((intFileCmp=fileCmp(strPrebuildCiosContentFileName,strModWiiCiosContentFileName,0,MAX(getFilesize(strPrebuildCiosContentFileName),getFilesize(strModWiiCiosContentFileName))))) {
+        if ((intFileCmp=fileCmp(strPrebuildCiosContentFileName,strModWiiCiosContentFileName,0,MAX(getFileSize(strPrebuildCiosContentFileName),getFileSize(strModWiiCiosContentFileName))))) {
             if (intFileCmp<0) {
                 printDebugMsg(NORMAL_DEBUG_MESSAGE,"files %s and %s differ in content\n",strPrebuildCiosContentFileName,strModWiiCiosContentFileName);
                 varout=(varout && false);
