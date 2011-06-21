@@ -12,8 +12,7 @@
 #include "nand.h"
 #include "sha1.h"
 #include "gui.h"
-#define ALIGN(a,b) ((((a)+(b)-1)/(b))*(b))
-#define round_up(x,n) (-(-(x) & -(n)))
+#include "macro.h"
 const u8 aesCommonKey[16]={0xeb,0xe4,0x2a,0x22,0x5e,0x85,0x93,0xe4,0x48,0xd9,0xc5,0x45,0x73,0x81,0xaa,0xf7};
 u8 *getContentCryptParameter(u8 *chCryptParameter,u16 intTmdModuleId) {
     memset(chCryptParameter,0,16);
@@ -144,18 +143,18 @@ void forgeTicket(signed_blob *sTik) {
     setZeroSignature(sTik);
     bruteTicket((tik *) SIGNATURE_PAYLOAD(sTik));
 }
-s32 installTicket(const signed_blob *sTik, const signed_blob *sCerts,u32 intCertsSize) {
+s32 installTicket(const signed_blob *sTik, const signed_blob *sCerts,u32 intCertsSize,const signed_blob *sCrl,u32 intCrlsize) {
 s32 varout;
-    if ((varout=ES_AddTicket(sTik,SIGNED_TIK_SIZE(sTik),sCerts,intCertsSize,NULL,0))<0) {
+    if ((varout=ES_AddTicket(sTik,SIGNED_TIK_SIZE(sTik),sCerts,intCertsSize,sCrl,intCrlsize))<0) {
         printDebugMsg(ERROR_DEBUG_MESSAGE,"\nES_AddTicket failed: %d",varout);
     }
     return varout;
 }
-s32 installTmdContents(const signed_blob *sTmd,const signed_blob *sCerts,u32 intCertsSize,const char *strNandContentLocation,bool blnProgressBar) {
+s32 installTmdContents(const signed_blob *sTmd,const signed_blob *sCerts,u32 intCertsSize,const signed_blob *sCrl,u32 intCrlsize,const char *strNandContentLocation,bool blnProgressBar) {
 s32 varout;
 u16 i;
 tmd *pTmd=(tmd *) SIGNATURE_PAYLOAD(sTmd);
-    if ((varout=ES_AddTitleStart(sTmd,SIGNED_TMD_SIZE(sTmd),sCerts,intCertsSize,NULL,0))<0) {
+    if ((varout=ES_AddTitleStart(sTmd,SIGNED_TMD_SIZE(sTmd),sCerts,intCertsSize,sCrl,intCrlsize))<0) {
         printDebugMsg(ERROR_DEBUG_MESSAGE,"\nES_AddTitleStart failed: %d",varout);
     }
     else {

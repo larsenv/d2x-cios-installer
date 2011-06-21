@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "libmatrice.h"
 #include "libfile.h"
+#include "libmath.h"
 int fileCmp(const char *strFileName1,const char *strFileName2,unsigned long lngOffset,size_t intBytesCount) {
 int varout=-1;
 u8 *chDataBytes1,*chDataBytes2;
@@ -37,7 +38,19 @@ size_t intReadBytesCount1,intReadBytesCount2;
     }
     return varout;
 }
-long getFilesize(const char *strFileName) {
+long getFilePointerSize(FILE *fp,bool blnRestoreFilePointer) {
+long varout=-1,lngCurrentFilePointerOffset=ftell(fp);
+    if (!fseek(fp,0,SEEK_END)) {
+        varout=ftell(fp);
+    }
+    if (blnRestoreFilePointer) {
+        if (lngCurrentFilePointerOffset>=0) {
+            fseek(fp,lngCurrentFilePointerOffset,SEEK_SET);
+        }
+    }
+    return varout;
+}
+long getFileSize(const char *strFileName) {
 FILE *fh;
 long varout=-1;
     if ((fh=fopen(strFileName,"r"))!=NULL) {
@@ -108,6 +121,28 @@ long lngFileSize;
             }
         }
         fclose(fd);
+    }
+    return varout;
+}
+void *getFileDataBlock(FILE *fp,unsigned int intOffset,size_t *intDataSize) {
+void *varout=NULL;
+long lngDataSize=getMinValue(getFilePointerSize(fp,false)-intOffset,*intDataSize);
+    if (lngDataSize>0) {
+        *intDataSize=lngDataSize;
+        if ((varout=malloc(*intDataSize))!=NULL) {
+            if (!fseek(fp,intOffset,SEEK_SET)) {
+                if ((fread(varout,*intDataSize,1,fp))!=1) {
+                    *intDataSize=0;
+                }
+            }
+            else {
+                *intDataSize=0;
+            }
+            if (*intDataSize==0) {
+                free(varout);
+                varout=NULL;
+            }
+        }
     }
     return varout;
 }

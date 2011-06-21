@@ -23,7 +23,6 @@
 #include "filesystem.h"
 #include "gui.h"
 #include "libfile.h"
-#define VERSION "2"
 #define IOS_MAJOR_TITLEID 1
 #define MODWII_CACHE_FOLDER "/nus"
 #define NAND_TEMP_DIRECTORY "/tmp/patchmii"
@@ -248,7 +247,7 @@ struct stCiosGroup *stCiosMaps,*stBetaCiosMaps=NULL;
                                         resetPreviousBgColor();
                                         printf("\n\n");
                                     }
-                                    printBreakLines(' ',intConsoleColumnsCount,"Offline installation requires files %s/%08x%08xv%d/.... on a SD or USB device. Use NUS Downloader v1.5a beta (local files option checked) to download these required files (no wads).",MODWII_CACHE_FOLDER,IOS_MAJOR_TITLEID,stCiosMaps[intSelectedCios].stCios[intSelectedCiosBase].stBase.chBase,stCiosMaps[intSelectedCios].stCios[intSelectedCiosBase].stBase.intBaseRevision);
+                                    printBreakLines(' ',intConsoleColumnsCount,"Offline installation requires files %s/%08x%08xv%d/.... or /IOS%d-64-v%d.wad on a SD or USB device. Use NUS Downloader v1.5a beta to download these required files.",MODWII_CACHE_FOLDER,IOS_MAJOR_TITLEID,stCiosMaps[intSelectedCios].stCios[intSelectedCiosBase].stBase.chBase,stCiosMaps[intSelectedCios].stCios[intSelectedCiosBase].stBase.intBaseRevision,stCiosMaps[intSelectedCios].stCios[intSelectedCiosBase].stBase.chBase,stCiosMaps[intSelectedCios].stCios[intSelectedCiosBase].stBase.intBaseRevision);
                                     printf("\n\nPress UP/DOWN to navigate.\n");
                                     printf("Press LEFT/RIGHT to change the values.\n");
                                     printf("Press A to install.\n");

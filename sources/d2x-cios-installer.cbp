@@ -146,6 +146,9 @@
 		<Unit filename="libutils.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="macro.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -224,6 +227,13 @@
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="video.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="wad.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="wad.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Extensions>

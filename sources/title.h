@@ -14,8 +14,8 @@ void bruteTmd(tmd *pTmd);
 void bruteTicket(tik *pTik);
 void forgeTmd(signed_blob *sTmd);
 void forgeTicket(signed_blob *sTik);
-s32 installTicket(const signed_blob *sTik, const signed_blob *sCerts,u32 intCertsLength);
-s32 installTmdContents(const signed_blob *sTmd,const signed_blob *sCerts,u32 intCertsSize,const char *strNandContentLocation,bool blnProgressBar);
+s32 installTicket(const signed_blob *sTik, const signed_blob *sCerts,u32 intCertsSize,const signed_blob *sCrl,u32 intCrlsize);
+s32 installTmdContents(const signed_blob *sTmd,const signed_blob *sCerts,u32 intCertsSize,const signed_blob *sCrl,u32 intCrlsize,const char *strNandContentLocation,bool blnProgressBar);
 u64 *getTitles(u32 *intTitlesCount);
 u8 getSlotsMap(u8 *intSlotsMap);
 #endif
