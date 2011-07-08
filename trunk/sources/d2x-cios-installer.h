@@ -6,5 +6,5 @@
 #define DEFAULT_FONT_BGCOLOR 0
 #define DEFAULT_FONT_FGCOLOR 7
 #define DEFAULT_FONT_WEIGHT 0
-#define VERSION "2.1"
+#define VERSION "2.2"
 #endif

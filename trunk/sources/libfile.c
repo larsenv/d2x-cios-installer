@@ -4,6 +4,9 @@
 #include "libmatrice.h"
 #include "libfile.h"
 #include "libmath.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/dirent.h>
 int fileCmp(const char *strFileName1,const char *strFileName2,unsigned long lngOffset,size_t intBytesCount) {
 int varout=-1;
 u8 *chDataBytes1,*chDataBytes2;
@@ -145,4 +148,34 @@ long lngDataSize=getMinValue(getFilePointerSize(fp,false)-intOffset,*intDataSize
         }
     }
     return varout;
+}
+bool isDirectory(const char *strDirectory) {
+bool varout=false;
+struct stat stFileInfos;
+    if (stat(strDirectory,&stFileInfos)==0) {
+        varout=((stFileInfos.st_mode & S_IFDIR)!=0);
+    }
+    return varout;
+}
+bool removeDirectory(const char *strDirectory) {
+bool varout=true;
+DIR *stRootDir;
+char strDirItemPath[256];
+struct dirent *stDirItem;
+    if ((stRootDir=opendir(strDirectory))!=NULL) {
+		while (((stDirItem=readdir(stRootDir))) && (varout)) {
+		    snprintf(strDirItemPath,sizeof(strDirItemPath),"%s/%s",strDirectory,stDirItem->d_name);
+            if (((strcmp(stDirItem->d_name,"."))) && ((strcmp(stDirItem->d_name,"..")))) {
+                if (isDirectory(strDirItemPath)) {
+                    varout=removeDirectory(strDirItemPath);
+                }
+                else {
+                    varout=(remove(strDirItemPath)==0);
+                }
+            }
+        }
+        closedir(stRootDir);
+        varout=(remove(strDirectory)==0);
+	}
+	return varout;
 }

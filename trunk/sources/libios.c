@@ -30,13 +30,30 @@
 #include "debug.h"
 #include "libios.h"
 #include "libmatrice.h"
+#include "libmath.h"
 #include "d2x-cios-installer.h"
+#include <ogc/machine/processor.h>
+#include <ogc/cache.h>
 #include "sha1.h"
 #include "title.h"
 #include "libfile.h"
 #if TESTING_CODE == 0
 #include "nand.h"
 #endif
+#define MEM_REG_BASE 0xd8b4000
+#define MEM_PROT (MEM_REG_BASE + 0x20a)
+static const u8 chDiReadlimitOriginalBytes[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x40,0x00,0x00,0x00,0x00,0x00,0x46,0x0A,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x08,0x00,0x00,0x00,0x00,0x7E,0xD4,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x08};
+static const u8 chDiReadlimitNewBytes[]={0x7e,0xd4};
+static const u8 chIsfsPermissionsOriginalBytes[]={0x42,0x8B,0xD0,0x01,0x25,0x66};
+static const u8 chIsfsPermissionsNewBytes[]={0x42,0x8B,0xE0,0x01,0x25,0x66};
+static const u8 chEsSetuidOriginalBytes[]={0xD1,0x2A,0x1C,0x39};
+static const u8 chEsSetuidNewBytes[]={0x46,0xC0};
+static const u8 chEsIdentifyOriginalBytes[]={0x28,0x03,0xD1,0x23};
+static const u8 chEsIdentifyNewBytes[]={0x00,0x00};
+static const u8 chOldTruchaOriginalBytes[]={0x20,0x07,0x23,0xA2};
+static const u8 chTruchaNewBytes[]={0x00};
+static const u8 chNewTruchaOriginalBytes[]={0x20,0x07,0x4B,0x0B};
+static unsigned short int intStubsMap[256]={-1,-1,-1,-1,65280,-1,-1,-1,-1,-1,768,256,-1,-1,-1,-1,512,-1,-1,-1,256,-1,-1,-1,-1,-1,-1,-1,-1,-1,2816,-1,-1,-1,-1,-1,-1,-1,-1,-1,3072,-1,-1,-1,-1,-1,-1,-1,-1,-1,5120,4864,5888,-1,-1,-1,-1,-1,-1,-1,6400,-1,-1,-1,-1,-1,-1,-1,-1,-1,6912,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,65280,65280,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,65280,65280,-1,-1,-1,65280,-1};
 unsigned short int intExternalCiosModulesCount=0;
 struct stExternalCiosModule *stExternalCiosModules=NULL;
 u8 *getExternalCiosModule(const char *strModuleName,char *strCiosContentsFolder,u32 **intModuleSize) {
@@ -188,7 +205,7 @@ u32 intXmlContentPatchsCount;
                 exit(2);
             }
             else {
-                for (pXmlCiosGroup=mxmlFindElement(pXmlCiosGroups,pXmlCiosGroups,NULL,NULL,NULL,MXML_DESCEND_FIRST);pXmlCiosGroup!=NULL;pXmlCiosGroup=mxmlFindElement(pXmlCiosGroup,pXmlCiosGroups,NULL,NULL,NULL,MXML_NO_DESCEND)) {
+                for (pXmlCiosGroup=mxmlFindElement(pXmlCiosGroups,pXmlCiosGroups,"ciosgroup",NULL,NULL,MXML_DESCEND_FIRST);pXmlCiosGroup!=NULL;pXmlCiosGroup=mxmlFindElement(pXmlCiosGroup,pXmlCiosGroups,"ciosgroup",NULL,NULL,MXML_NO_DESCEND)) {
                     if (*intCiosCount<intXmlCiosCount) {
                         chXmlGroupCiosCount=atoi(mxmlElementGetAttr(pXmlCiosGroup,"basescount"));
                         stCiosMaps[*intCiosCount].stCios=(struct stCiosMap *) malloc(chXmlGroupCiosCount*sizeof(struct stCiosMap));
@@ -200,7 +217,7 @@ u32 intXmlContentPatchsCount;
                             stCiosMaps[*intCiosCount].intCiosRevision=atoi(mxmlElementGetAttr(pXmlCiosGroup,"version"));
                             stCiosMaps[*intCiosCount].strGroupName=strdup(mxmlElementGetAttr(pXmlCiosGroup,"name"));
                             stCiosMaps[*intCiosCount].chCiosCount=0;
-                            for (pXmlCiosBase=mxmlFindElement(pXmlCiosGroup,pXmlCiosGroup,NULL,NULL,NULL,MXML_DESCEND_FIRST);pXmlCiosBase!=NULL;pXmlCiosBase=mxmlFindElement(pXmlCiosBase,pXmlCiosGroup,NULL,NULL,NULL,MXML_NO_DESCEND)) {
+                            for (pXmlCiosBase=mxmlFindElement(pXmlCiosGroup,pXmlCiosGroup,"base",NULL,NULL,MXML_DESCEND_FIRST);pXmlCiosBase!=NULL;pXmlCiosBase=mxmlFindElement(pXmlCiosBase,pXmlCiosGroup,"base",NULL,NULL,MXML_NO_DESCEND)) {
                                 if (stCiosMaps[*intCiosCount].chCiosCount<chXmlGroupCiosCount) {
                                     stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stBase.chBase=atoi(mxmlElementGetAttr(pXmlCiosBase,"ios"));
                                     stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stBase.intBaseRevision=atoi(mxmlElementGetAttr(pXmlCiosBase,"version"));
@@ -220,7 +237,7 @@ u32 intXmlContentPatchsCount;
                                         else {
                                             stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intModulesCount=0;
                                             stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount=0;
-                                            for (pXmlCiosContent=mxmlFindElement(pXmlCiosBase,pXmlCiosBase,NULL,NULL,NULL,MXML_DESCEND_FIRST);pXmlCiosContent!=NULL;pXmlCiosContent=mxmlFindElement(pXmlCiosContent,pXmlCiosBase,NULL,NULL,NULL,MXML_NO_DESCEND)) {
+                                            for (pXmlCiosContent=mxmlFindElement(pXmlCiosBase,pXmlCiosBase,"content",NULL,NULL,MXML_DESCEND_FIRST);pXmlCiosContent!=NULL;pXmlCiosContent=mxmlFindElement(pXmlCiosContent,pXmlCiosBase,"content",NULL,NULL,MXML_NO_DESCEND)) {
                                                 if (stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount<intXmlCiosContentsCount) {
                                                     stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intContentId=strtoul(mxmlElementGetAttr(pXmlCiosContent,"id"),&chStopCharConversion,16);
                                                     if ((strContentPatchsCount=(char *) mxmlElementGetAttr(pXmlCiosContent,"patchscount"))==NULL) {
@@ -236,7 +253,7 @@ u32 intXmlContentPatchsCount;
                                                     }
                                                     else {
                                                         stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intPatchsCount=0;
-                                                        for (pXmlCiosContentPatch=mxmlFindElement(pXmlCiosContent,pXmlCiosContent,NULL,NULL,NULL,MXML_DESCEND_FIRST);pXmlCiosContentPatch!=NULL;pXmlCiosContentPatch=mxmlFindElement(pXmlCiosContentPatch,pXmlCiosContent,NULL,NULL,NULL,MXML_NO_DESCEND)) {
+                                                        for (pXmlCiosContentPatch=mxmlFindElement(pXmlCiosContent,pXmlCiosContent,"patch",NULL,NULL,MXML_DESCEND_FIRST);pXmlCiosContentPatch!=NULL;pXmlCiosContentPatch=mxmlFindElement(pXmlCiosContentPatch,pXmlCiosContent,"patch",NULL,NULL,MXML_NO_DESCEND)) {
                                                             if (stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intPatchsCount<intXmlContentPatchsCount) {
                                                                 stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].stPatchs[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intPatchsCount].intOffset=strtoul(mxmlElementGetAttr(pXmlCiosContentPatch,"offset"),&chStopCharConversion,16);
                                                                 stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].stPatchs[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intPatchsCount].intPatchSize=atoi(mxmlElementGetAttr(pXmlCiosContentPatch,"size"));
@@ -373,9 +390,81 @@ u8 *chModuleContent=memalign(32,intContentSize);
     return writeNandFile(strNandContentFileName,chModuleContent,intContentSize);
 #endif
 }
-u8 getLoadedIos() {
+u8 getRuntimeIos() {
     return *((volatile u32 *) 0x80003140)>>16;
 }
-u16 getLoadedIosVersion() {
+u16 getRuntimeIosVersion() {
     return *((volatile u32 *) 0x80003140) & 0xffff;
+}
+static u32 applyOnTheFlyIosPatchs(const char *strVerboseMessage,const u8 *chOriginalBytes,u32 chOriginalBytesCount,const u8 *chNewBytes,u32 chNewBytesCount,u32 intOffsetPatch) {
+u32 varout=0,i,intMemoryRangeSize=(chNewBytesCount >> 5 << 5)+64;
+u8 *pStartPatchScanAddress=(u8 *) 0x93400000,*pPatchOffset=NULL,*pPatchOffsetMemoryRange=NULL;
+    printf("%s",strVerboseMessage);
+    while ((u32) pStartPatchScanAddress<(0x94000000-chNewBytesCount)) {
+        if (!memcmp(pStartPatchScanAddress,chOriginalBytes,chOriginalBytesCount)) {
+            varout++;
+            pPatchOffset=pStartPatchScanAddress+intOffsetPatch;
+            pPatchOffsetMemoryRange=(u8 *)(((u32)pPatchOffset) >> 5 << 5);
+            for (i=0;i<chNewBytesCount;i++) {
+                *pPatchOffset++ =chNewBytes[i];
+            }
+            DCFlushRange(pPatchOffsetMemoryRange,intMemoryRangeSize);
+            ICInvalidateRange(pPatchOffsetMemoryRange,intMemoryRangeSize);
+        }
+        pStartPatchScanAddress++;
+    }
+    if (*strVerboseMessage) {
+        if (varout) {
+            printf(" OK\n");
+        }
+        else {
+            printf(" FAILED\n");
+        }
+    }
+    return varout;
+}
+u32 applyAhbProtPatchs(bool blnVerbose) {
+u32 varout=0;
+    if (HAVE_AHBPROT) {
+        write32(MEM_PROT,read32(MEM_PROT) & 0x0000FFFF);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"di_readlimit..":"",chDiReadlimitOriginalBytes,sizeof(chDiReadlimitOriginalBytes),chDiReadlimitNewBytes,sizeof(chDiReadlimitNewBytes),12);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"isfs_permissions..":"",chIsfsPermissionsOriginalBytes,sizeof(chIsfsPermissionsOriginalBytes),chIsfsPermissionsNewBytes,sizeof(chIsfsPermissionsNewBytes),0);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"es_setuid":"",chEsSetuidOriginalBytes,sizeof(chEsSetuidOriginalBytes),chEsSetuidNewBytes,sizeof(chEsSetuidNewBytes),0);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"es_identify":"",chEsIdentifyOriginalBytes,sizeof(chEsIdentifyOriginalBytes),chEsIdentifyNewBytes,sizeof(chEsIdentifyNewBytes),2);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"hash_check":"",chOldTruchaOriginalBytes,sizeof(chOldTruchaOriginalBytes),chTruchaNewBytes,sizeof(chTruchaNewBytes),1);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"new_hash_check":"",chNewTruchaOriginalBytes,sizeof(chNewTruchaOriginalBytes),chTruchaNewBytes,sizeof(chTruchaNewBytes),1);
+    }
+    return varout;
+}
+u8 getSlotsMap(u8 *intSlotsMap) {
+u8 varout=0;
+u64 *intTitles;
+signed_blob *sTmd;
+u32 intTitlesCount,intMajorTitleId,intMinorTitleId,intTmdSize;
+tmd *pTmd;
+    memset((void *) intSlotsMap,0,256);
+    intTitles=getTitles(&intTitlesCount);
+    if (intTitles!=NULL) {
+        while (varout<intTitlesCount) {
+            intMajorTitleId =(intTitles[varout] >> 32);
+            intMinorTitleId =(intTitles[varout] & 0xFFFFFFFF);
+            if ((intMajorTitleId!=0x1) || (intMinorTitleId<3) || (intMinorTitleId>255)) {
+                intTitlesCount--;
+                memcpy(&intTitles[varout],&intTitles[varout+1],(intTitlesCount-varout)*sizeof(u64));
+            }
+            else {
+                intSlotsMap[intMinorTitleId]=ACTIVE_IOS;
+                if ((sTmd=getStoredTmd(intTitles[varout],&intTmdSize))!=NULL) {
+                    pTmd=(tmd *) SIGNATURE_PAYLOAD(sTmd);
+                    if (isInRange(pTmd->title_version,intStubsMap[intMinorTitleId],65535,true,false)) {
+                        intSlotsMap[intMinorTitleId]=STUB_IOS;
+                    }
+                    free(sTmd);
+                }
+                varout++;
+            }
+        }
+        free(intTitles);
+	}
+    return varout;
 }

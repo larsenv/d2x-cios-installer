@@ -22,7 +22,8 @@
 				<Option compiler="wii_compiler" />
 				<Option use_console_runner="0" />
 				<ExtraCommands>
-					<Add after="wiiload d2x-cios-installer.elf" />
+					<Add after="chmod +x postbuild.bat" />
+					<Add after="sh postbuild.bat" />
 				</ExtraCommands>
 				<MakeCommands>
 					<Build command="$make -f $makefile" />

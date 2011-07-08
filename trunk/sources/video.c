@@ -11,8 +11,10 @@
 #include "video.h"
 #include "d2x-cios-installer.h"
 #include "libmath.h"
+#include "gui.h"
 enum CONSOLE_FONT_COLORS CURRENT_FONT_BGCOLOR=DEFAULT_FONT_BGCOLOR,PREVIOUS_FONT_BGCOLOR=DEFAULT_FONT_BGCOLOR,CURRENT_FONT_FGCOLOR=DEFAULT_FONT_FGCOLOR,PREVIOUS_FONT_FGCOLOR=DEFAULT_FONT_FGCOLOR;
 enum CONSOLE_FONT_WEIGHTS PREVIOUS_FONT_WEIGHT=DEFAULT_FONT_WEIGHT,CURRENT_FONT_WEIGHT=DEFAULT_FONT_WEIGHT;
+unsigned char CONSOLE_CURSOR_CURRENT_COLUMN=0,CONSOLE_CURSOR_PREVIOUS_COLUMN=0,CONSOLE_CURSOR_CURRENT_ROW=0,CONSOLE_CURSOR_PREVIOUS_ROW=0;
 void clearConsole() {
 	printf("\x1b[2J");
 	fflush(stdout);
@@ -49,12 +51,13 @@ void resetPreviousBgColor() {
 void resetPreviousFontStyle() {
     setFontStyle(PREVIOUS_FONT_BGCOLOR,PREVIOUS_FONT_FGCOLOR,PREVIOUS_FONT_WEIGHT);
 }
-void initConsole(const void *imgBgData,enum CONSOLE_COLORS CONSOLE_COLOR,double dbLeft,double dbTop,double dbWidth,double dbHeight) {
+void initConsole(const void *imgBgData,enum CONSOLE_COLORS CONSOLE_COLOR,const char *strSplashScreenMessage,double dbLeft,double dbTop,double dbWidth,double dbHeight) {
 PNGUPROP imgProperties;
 IMGCTX imgContext;
 void *pFramebuffer=NULL;
 GXRModeObj *pRmode=NULL;
 double dbConsoleFrameX[2]={dbLeft,dbLeft},dbConsoleFrameY[2]={dbTop,dbTop},dbBgImgXScaleFactor=1,dbBgImgYScaleFactor=1,dbReferenceWidth,dbReferenceHeight;
+int intConsoleColumnsCount,intConsoleRowsCount;
     VIDEO_Init();
     pRmode=VIDEO_GetPreferredMode(NULL);
     pFramebuffer=MEM_K0_TO_K1(SYS_AllocateFramebuffer(pRmode));
@@ -95,9 +98,27 @@ double dbConsoleFrameX[2]={dbLeft,dbLeft},dbConsoleFrameY[2]={dbTop,dbTop},dbBgI
         PNGU_ReleaseImageContext(imgContext);
     }
     resetDefaultFontSyle();
+    if (*strSplashScreenMessage) {
+        CON_GetMetrics(&intConsoleColumnsCount,&intConsoleRowsCount);
+        printAlignedText(ALIGN_CENTER,ALIGN_MIDDLE,0,0,intConsoleRowsCount-1,intConsoleColumnsCount-1,true,true,strSplashScreenMessage);
+    }
+
 }
 void setCursorPosition(u8 intRow,u8 intColumn) {
     printf("\x1b[%u;%uH",intRow,intColumn);
+}
+void saveCursorPosition() {
+    CONSOLE_CURSOR_PREVIOUS_COLUMN=CONSOLE_CURSOR_CURRENT_COLUMN;
+    CONSOLE_CURSOR_PREVIOUS_ROW=CONSOLE_CURSOR_CURRENT_ROW;
+    CONSOLE_CURSOR_CURRENT_COLUMN=getConsoleColumn();
+    CONSOLE_CURSOR_CURRENT_ROW=getConsoleRow();
+}
+void resetSavedPreviousCursorPosition() {
+    setCursorPosition(CONSOLE_CURSOR_PREVIOUS_ROW,CONSOLE_CURSOR_PREVIOUS_COLUMN);
+    saveCursorPosition();
+}
+void resetSavedCursorPosition() {
+    setCursorPosition(CONSOLE_CURSOR_CURRENT_ROW,CONSOLE_CURSOR_CURRENT_COLUMN);
 }
 int getConsoleColumnsCount() {
 int intConsoleColumnsCount,intConsoleRowsCount;

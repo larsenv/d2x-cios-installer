@@ -31,6 +31,7 @@ signed_blob *sPrebuildTmd=NULL;
 tmd *pPrebuildTmd;
 #else
 int intConsoleRow;
+struct stProgressBar stProgressBarSettings;
 #endif
 int intReturnValue,varout=0,intConsoleColumnsCount;
 u16 i;
@@ -49,9 +50,10 @@ bool blnFixTmd=false;
 #if TESTING_CODE
     printDebugMsg(NORMAL_DEBUG_MESSAGE,"[Downloading IOS%d metadata]\n",stSelectedCios->stBase.chBase);
 #else
-    printStyledText(-1,-1,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,"[*] Downloading IOS%d metadata",stSelectedCios->stBase.chBase);
     intConsoleRow=getConsoleRow();
-    drawProgressBar(intConsoleRow,getConsoleColumn(),10,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_WHITE,CONSOLE_FONT_GREEN,3,"");
+    setProgressBarSettings(&stProgressBarSettings,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,3);
+    drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,&stProgressBarSettings,"[*] Downloading IOS%d metadata",stSelectedCios->stBase.chBase);
+    printf("\n\n");
 #endif
 	snprintf(strNusObjectUrl,sizeof(strNusObjectUrl),"http://nus.cdn.shop.wii.com/ccs/download/%08x%08x/tmd.%d",intMajorTitleId,stSelectedCios->stBase.chBase,stSelectedCios->stBase.intBaseRevision);
     snprintf(strNusObjectFileName,sizeof(strNusObjectFileName),"tmd.%d",stSelectedCios->stBase.intBaseRevision);
@@ -59,7 +61,7 @@ bool blnFixTmd=false;
 #if TESTING_CODE
 	printDebugMsg(NORMAL_DEBUG_MESSAGE,"Getting tmd.%d file...",stSelectedCios->stBase.intBaseRevision);
 #else
-	updateProgressBar("Getting tmd.%d file...",stSelectedCios->stBase.intBaseRevision);
+	updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Getting tmd.%d file...",stSelectedCios->stBase.intBaseRevision);
 #endif
 	if ((pStreamTmdBuffer=getNusObject(strCacheFolder,strWadFileName,strNusObjectFileName,strNusObjectUrl,&intTmdSize))==NULL) {
 		printDebugMsg(ERROR_DEBUG_MESSAGE,"\nFailed to get NUS object tmd.%d",stSelectedCios->stBase.intBaseRevision);
@@ -74,7 +76,7 @@ bool blnFixTmd=false;
             printDebugMsg(NORMAL_DEBUG_MESSAGE," OK\n");
             printDebugMsg(NORMAL_DEBUG_MESSAGE,"Getting cetk file...");
 #else
-            updateProgressBar("Getting cetk file...");
+            updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Getting cetk file...");
 #endif
             snprintf(strNusObjectUrl,sizeof(strNusObjectUrl),"http://nus.cdn.shop.wii.com/ccs/download/%08x%08x/cetk",intMajorTitleId,stSelectedCios->stBase.chBase);
             if ((pStreamTikBuffer=getNusObject(strCacheFolder,strWadFileName,"cetk",strNusObjectUrl,&intTicketSize))==NULL) {
@@ -102,10 +104,11 @@ bool blnFixTmd=false;
 #if TESTING_CODE
                             printDebugMsg(NORMAL_DEBUG_MESSAGE,"[Downloading contents (%d)]\n",pTmd->num_contents);
 #else
-                            updateProgressBar("Done.");
-                            printStyledText(-1,-1,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,"\n[*] Downloading and patching contents (%d)",pTmd->num_contents);
+                            updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Done.");
                             intConsoleRow=getConsoleRow();
-                            drawProgressBar(intConsoleRow,getConsoleColumn(),10,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_WHITE,CONSOLE_FONT_GREEN,pTmd->num_contents+1,"");
+                            setProgressBarSettings(&stProgressBarSettings,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,pTmd->num_contents+1);
+                            drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,&stProgressBarSettings,"[*] Downloading and patching contents (%d)",pTmd->num_contents);
+                            printf("\n\n");
 #endif
                             for (i=0;i<pTmd->num_contents;i++) {
                                 intFreeContentId=MAX(intFreeContentId,pTmdContent[i].cid);
@@ -113,7 +116,7 @@ bool blnFixTmd=false;
 #if TESTING_CODE
                                 printDebugMsg(NORMAL_DEBUG_MESSAGE,"Getting %s file (%lld bytes)...",strContentId,pTmdContent[i].size);
 #else
-                                updateProgressBar("Getting %s file (%lld bytes)...",strContentId,pTmdContent[i].size);
+                                updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Getting %s file (%lld bytes)...",strContentId,pTmdContent[i].size);
 #endif
                                 snprintf(strNusObjectUrl,sizeof(strNusObjectUrl),"http://nus.cdn.shop.wii.com/ccs/download/%08x%08x/%s",intMajorTitleId,stSelectedCios->stBase.chBase,strContentId);
                                 if ((chCryptedContent=getNusObject(strCacheFolder,strWadFileName,strContentId,strNusObjectUrl,&intContentSize))==NULL) {
@@ -217,10 +220,11 @@ bool blnFixTmd=false;
 #if TESTING_CODE
                                 printDebugMsg(NORMAL_DEBUG_MESSAGE,"[Adding contents (%d)]\n",stSelectedCios->intModulesCount);
 #else
-                                updateProgressBar("Done.");
-                                printStyledText(-1,-1,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,"\n[*] Adding contents (%d)",stSelectedCios->intModulesCount);
+                                updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Done.");
                                 intConsoleRow=getConsoleRow();
-                                drawProgressBar(intConsoleRow,getConsoleColumn(),10,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_WHITE,CONSOLE_FONT_GREEN,stSelectedCios->intModulesCount+1,"");
+                                setProgressBarSettings(&stProgressBarSettings,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,stSelectedCios->intModulesCount+1);
+                                drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,&stProgressBarSettings,"[*] Adding contents (%d)",stSelectedCios->intModulesCount);
+                                printf("\n\n");
 #endif
                                 if (stSelectedCios->intModulesCount) {
                                     blnFixTmd=true;
@@ -229,7 +233,7 @@ bool blnFixTmd=false;
 #if TESTING_CODE
                                         printDebugMsg(NORMAL_DEBUG_MESSAGE,"Adding content %d (%u bytes)...",intFreeContentId,*(stSelectedCios->stCiosModules[i].intModuleSize));
 #else
-                                        updateProgressBar("Adding content %d (%u bytes)...",intFreeContentId,*(stSelectedCios->stCiosModules[i].intModuleSize));
+                                        updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Adding content %d (%u bytes)...",intFreeContentId,*(stSelectedCios->stCiosModules[i].intModuleSize));
 #endif
                                         snprintf(strNusObjectFileName,sizeof(strNusObjectFileName),"%s/%08x",strNandWorkFolder,intFreeContentId);
                                         if ((intReturnValue=addModule(pTmd,&(stSelectedCios->stCiosModules[i]),intFreeContentId,strNusObjectFileName))<0) {
@@ -254,10 +258,11 @@ bool blnFixTmd=false;
 #if TESTING_CODE
                                     printDebugMsg(NORMAL_DEBUG_MESSAGE,"[Fixing tmd and ticket files]\n");
 #else
-                                    updateProgressBar("Done.");
-                                    printStyledText(-1,-1,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,"\n[*] Fixing tmd and ticket files");
+                                    updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Done.");
                                     intConsoleRow=getConsoleRow();
-                                    drawProgressBar(intConsoleRow,getConsoleColumn(),10,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_WHITE,CONSOLE_FONT_GREEN,3,"");
+                                    setProgressBarSettings(&stProgressBarSettings,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,3);
+                                    drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,&stProgressBarSettings,"[*] Fixing tmd and ticket files");
+                                    printf("\n\n");
 #endif
                                     if (stSelectedCios->stBase.chBase!=chSelectedCiosSlot) {
                                         blnFixTmd=true;
@@ -272,7 +277,7 @@ bool blnFixTmd=false;
                                         forgeTicket(sTik);
                                     }
 #if TESTING_CODE == 0
-                                    updateProgressBar("Fixing ticket...");
+                                    updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Fixing ticket...");
 #endif
                                     if (blnFixTmd) {
 #if TESTING_CODE
@@ -311,24 +316,25 @@ bool blnFixTmd=false;
                                         waitPadsKeyPressed("Press any button to continue...\n");
                                     }
 #else
-                                    updateProgressBar("Fixing tmd...");
-                                    updateProgressBar("Done.");
-                                    printStyledText(-1,-1,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,"\n[*] Installing Title");
+                                    updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Fixing tmd...");
+                                    updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Done.");
                                     intConsoleRow=getConsoleRow();
-                                    drawProgressBar(intConsoleRow,getConsoleColumn(),10,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_WHITE,CONSOLE_FONT_GREEN,2+pTmd->num_contents,"");
-                                    updateProgressBar("Installing ticket...");
+                                    setProgressBarSettings(&stProgressBarSettings,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,2+pTmd->num_contents);
+                                    drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,&stProgressBarSettings,"[*] Installing Title");
+                                    printf("\n\n");
+                                    updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Installing ticket...");
                                     if ((intReturnValue=installTicket(sTik,sCerts,HAXX_certs_size,NULL,0))<0) {
                                         printDebugMsg(ERROR_DEBUG_MESSAGE,"\ninstallTicket returned %d", intReturnValue);
                                         varout=12;
                                     }
                                     else {
                                         aes_set_key(getTitleKey(sTik,chTitleKey));
-                                        if ((intReturnValue=installTmdContents(sTmd,sCerts,HAXX_certs_size,NULL,0,strNandWorkFolder,true))<0) {
+                                        if ((intReturnValue=installTmdContents(sTmd,sCerts,HAXX_certs_size,NULL,0,strNandWorkFolder,&stProgressBarSettings))<0) {
                                             printDebugMsg(ERROR_DEBUG_MESSAGE,"\ninstallTmdContents returned %d",intReturnValue);
                                             varout=13;
                                         }
                                         else {
-                                            updateProgressBar("Done.");
+                                            updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Done.");
                                         }
                                     }
 #endif
