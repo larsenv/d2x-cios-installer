@@ -11,8 +11,8 @@
 #include "debug.h"
 #include "nand.h"
 #include "sha1.h"
-#include "gui.h"
 #include "macro.h"
+#include "d2x-cios-installer.h"
 const u8 aesCommonKey[16]={0xeb,0xe4,0x2a,0x22,0x5e,0x85,0x93,0xe4,0x48,0xd9,0xc5,0x45,0x73,0x81,0xaa,0xf7};
 u8 *getContentCryptParameter(u8 *chCryptParameter,u16 intTmdModuleId) {
     memset(chCryptParameter,0,16);
@@ -150,7 +150,7 @@ s32 varout;
     }
     return varout;
 }
-s32 installTmdContents(const signed_blob *sTmd,const signed_blob *sCerts,u32 intCertsSize,const signed_blob *sCrl,u32 intCrlsize,const char *strNandContentLocation,bool blnProgressBar) {
+s32 installTmdContents(const signed_blob *sTmd,const signed_blob *sCerts,u32 intCertsSize,const signed_blob *sCrl,u32 intCrlsize,const char *strNandContentLocation,struct stProgressBar *stProgressBarSettings) {
 s32 varout;
 u16 i;
 tmd *pTmd=(tmd *) SIGNATURE_PAYLOAD(sTmd);
@@ -159,8 +159,8 @@ tmd *pTmd=(tmd *) SIGNATURE_PAYLOAD(sTmd);
     }
     else {
         for (i=0;i<pTmd->num_contents;i++) {
-            if (blnProgressBar) {
-                updateProgressBar("Installing content %08x...",i);
+            if (stProgressBarSettings!=NULL) {
+                updateProgressBar(stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Installing content %08x...",i);
             }
             if ((varout=installTmdContent(pTmd,i,strNandContentLocation))<0) {
                 printDebugMsg(ERROR_DEBUG_MESSAGE,"\ninstallTmdContent(%d) failed: %d",i,varout);
@@ -192,26 +192,15 @@ u64 *varout=NULL;
     }
     return varout;
 }
-u8 getSlotsMap(u8 *intSlotsMap) {
-u8 varout=0;
-u64 *intTitles;
-u32 intTitlesCount,intMajorTitleId,intMinorTitleId;
-    memset((void *) intSlotsMap,0,256);
-    intTitles=getTitles(&intTitlesCount);
-    if (intTitles!=NULL) {
-        while (varout<intTitlesCount) {
-            intMajorTitleId =(intTitles[varout] >> 32);
-            intMinorTitleId =(intTitles[varout] & 0xFFFFFFFF);
-            if ((intMajorTitleId!=0x1) || (intMinorTitleId<3) || (intMinorTitleId>255)) {
-                intTitlesCount--;
-                memcpy(&intTitles[varout],&intTitles[varout+1],(intTitlesCount-varout)*sizeof(u64));
+signed_blob *getStoredTmd(u64 intTitleId,u32 *intTmdSize) {
+signed_blob *varout=NULL;
+	if (ES_GetStoredTMDSize(intTitleId,intTmdSize)>=0) {
+		if ((varout=(signed_blob *) memalign(32,(*intTmdSize+31)&(~31)))!=NULL) {
+            if (ES_GetStoredTMD(intTitleId,varout,*intTmdSize)<0) {
+                free(varout);
+                varout=NULL;
             }
-            else {
-                intSlotsMap[intMinorTitleId]=1;
-                varout++;
-            }
-        }
-        free(intTitles);
+		}
 	}
-    return varout;
+	return varout;
 }

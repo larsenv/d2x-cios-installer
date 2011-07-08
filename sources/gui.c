@@ -9,7 +9,6 @@
 #include "libutils.h"
 #include "libmath.h"
 #include "libstring.h"
-struct stProgressBar stProgressBar1;
 u8 getTextBoxRow(u8 chRow) {
     return (chRow==AUTOSIZE)?getConsoleRow():chRow;
 }
@@ -64,6 +63,7 @@ va_list pArguments;
     vsnprintf(strTextBuffer,sizeof(strTextBuffer),strTexteFormat,pArguments);
     va_end(pArguments);
     printf("%s",strTextBuffer);
+    saveCursorPosition();
 }
 void printTextInColumnsRange(u8 chRow,u8 chColumn,u8 chMinColumn,u8 chMaxColumn,const char *strTexteFormat,...) {
 static char strTextBuffer[1024];
@@ -81,6 +81,7 @@ va_list pArguments;
             else {
                 printLocatedText(chRow,chColumn,&strTextBuffer[chMinColumn-chColumn]);
             }
+            resetSavedPreviousCursorPosition();
         }
     }
     va_end(pArguments);
@@ -120,6 +121,7 @@ double dbTextContainerX[2]={0,0},dbTextContainerY[2]={0,0};
                 else {
                     while (intBreakLinesCount) {
                         printLocatedText(dbVerticalAlign,dbHorizontalAlign,strTextBuffer);
+                        resetSavedPreviousCursorPosition();
                         dbVerticalAlign++;
                         intBreakLinesCount--;
                     }
@@ -137,6 +139,7 @@ double dbTextContainerX[2]={0,0},dbTextContainerY[2]={0,0};
             }
             else {
                 printLocatedText(dbVerticalAlign,dbHorizontalAlign,strTextBuffer);
+                resetSavedPreviousCursorPosition();
             }
         }
     }
@@ -176,6 +179,7 @@ s16 i,intFrameColumnsCount,intMinRow,intMaxRow;
     intMaxRow=chMaxRow;
     setFontStyle(FRAME_COLOR,BORDER_COLOR,CONSOLE_FONT_NORMAL);
     intFrameColumnsCount=chMaxColumn-chMinColumn+1;
+    saveCursorPosition();
     if (BORDER_TYPE & TOP_BORDER) {
         setCursorPosition(chMinRow,chMinColumn);
         printRepeatString(intFrameColumnsCount,"%c",196);
@@ -193,6 +197,7 @@ s16 i,intFrameColumnsCount,intMinRow,intMaxRow;
                 default:
                     printLocatedText(chMinRow,chMinColumn,"%c",218);
             }
+            resetSavedPreviousCursorPosition();
         }
         if (chRightBorder) {
             switch ((unsigned char) (TOP_LEFT_JUNCTION)) {
@@ -208,6 +213,7 @@ s16 i,intFrameColumnsCount,intMinRow,intMaxRow;
                 default:
                     printLocatedText(chMinRow,chMaxColumn,"%c",191);
             }
+            resetSavedPreviousCursorPosition();
         }
         intMinRow++;
     }
@@ -228,6 +234,7 @@ s16 i,intFrameColumnsCount,intMinRow,intMaxRow;
                 default:
                     printLocatedText(chMaxRow,chMinColumn,"%c",192);
             }
+            resetSavedPreviousCursorPosition();
         }
         if (chRightBorder) {
             switch ((unsigned char) (TOP_LEFT_JUNCTION)) {
@@ -243,6 +250,7 @@ s16 i,intFrameColumnsCount,intMinRow,intMaxRow;
                 default:
                     printLocatedText(chMaxRow,chMaxColumn,"%c",217);
             }
+            resetSavedPreviousCursorPosition();
         }
         intMaxRow--;
     }
@@ -255,6 +263,7 @@ s16 i,intFrameColumnsCount,intMinRow,intMaxRow;
             printf("%s%*s%s",strLeftBorder,intFrameColumnsCount,"",strRightBorder);
         }
     }
+    resetSavedCursorPosition();
     resetPreviousFontStyle();
 }
 void printTextBox(u8 chMinRow,u8 chMinColumn,u8 chMaxRow,u8 chMaxColumn,double dbHorizontalAlign,double dbVerticalAlign,enum BORDERS BORDER_TYPE,enum CONSOLE_FONT_COLORS BORDER_COLOR,enum FRAME_JUNCTIONS TOP_LEFT_JUNCTION,enum FRAME_JUNCTIONS RIGHT_LEFT_JUNCTION,enum FRAME_JUNCTIONS BOTTOM_LEFT_JUNCTION,enum FRAME_JUNCTIONS BOTTOM_RIGHT_JUNCTION,enum CONSOLE_FONT_COLORS BGCOLOR,enum CONSOLE_FONT_COLORS FONT_FGCOLOR,enum CONSOLE_FONT_WEIGHTS FONT_WEIGHT,bool blnMultiLine,bool blnHideOverflowText,const char *strFormatValue,...) {
@@ -313,38 +322,85 @@ double dbTextContainerX[2]={dbColumn,dbColumn},dbTextContainerY[2]={dbRow,dbRow}
     dbRow=getRoundNumber(getPolyContainerPosition(&dbTextContainerY[0],2,chFrameMinRow,chFrameMaxRow,dbRow));
     printTextBox(dbRow,dbColumn,getRoundNumber(dbRow+dbHeight-1),getRoundNumber(dbColumn+dbWidth-1),dbHorizontalAlign,dbVerticalAlign,BORDER_TYPE,BORDER_COLOR,TOP_LEFT_JUNCTION,RIGHT_LEFT_JUNCTION,BOTTOM_LEFT_JUNCTION,BOTTOM_RIGHT_JUNCTION,BGCOLOR,FONT_FGCOLOR,FONT_WEIGHT,blnMultiLine,blnHideOverflowText,strTextBuffer);
 }
-void drawProgressBar(u8 chProgressBarRow,u8 chProgressBarColumn,u8 chProgressBarSize,u8 chProgressBarTextSize,u8 chProgressBarTextColumn,u8 chProgressBarTextRow,enum CONSOLE_FONT_COLORS BGCOLOR,enum CONSOLE_FONT_COLORS PROGRESSCOLOR,unsigned int intOperationsCount,const char *strFormatLabel,...) {
+void drawLabel(u8 chRow,u8 chColumn,enum CONSOLE_FONT_COLORS FONT_BGCOLOR,enum CONSOLE_FONT_COLORS FONT_FGCOLOR,enum CONSOLE_FONT_WEIGHTS FONT_WEIGHT,const char *strLabelCaption,u8 chLabelSize,struct stLabel *stLabelSettings) {
+    printStyledText(chRow,chColumn,FONT_BGCOLOR,FONT_FGCOLOR,FONT_WEIGHT,strLabelCaption);
+    CON_GetPosition(&stLabelSettings->stLabelLocation.intColumn,&stLabelSettings->stLabelLocation.intRow);
+    stLabelSettings->chLabelSize=chLabelSize;
+    printf("%*s",(unsigned int) stLabelSettings->chLabelSize,"");
+}
+void printLabel(u8 chRow,u8 chColumn,enum CONSOLE_FONT_COLORS FONT_BGCOLOR,enum CONSOLE_FONT_COLORS FONT_FGCOLOR,enum CONSOLE_FONT_WEIGHTS FONT_WEIGHT,unsigned char chLabelSize,const char *strFormatLabel,...) {
+static char strLabelText[256];
+va_list pArguments;
+unsigned char chLabelLength;
+    saveCursorPosition();
+    va_start(pArguments,strFormatLabel);
+    vsnprintf(strLabelText,chLabelSize+1,strFormatLabel,pArguments);
+    va_end(pArguments);
+    setCursorPosition(getTextBoxRow(chRow),getTextBoxColumn(chColumn));
+    setFontStyle(FONT_BGCOLOR,FONT_FGCOLOR,FONT_WEIGHT);
+    printf("%.*s",(unsigned int) chLabelSize,strLabelText);
+    resetPreviousFontStyle();
+    chLabelLength=strlen(strLabelText);
+    printf("%*s",(unsigned int) ((chLabelLength>chLabelSize)?0:chLabelSize-chLabelLength),"");
+    resetSavedCursorPosition();
+}
+void setProgressBarSettings(struct stProgressBar *stProgressBarSettings,u8 chProgressBarTextSize,u8 chProgressBarTextColumn,u8 chProgressBarTextRow,enum CONSOLE_FONT_COLORS PROGRESSCOLOR,unsigned int intOperationsCount) {
+    stProgressBarSettings->chProgressBarTextSize=chProgressBarTextSize;
+    stProgressBarSettings->stProgressBarTextLocation.intColumn=chProgressBarTextColumn;
+    stProgressBarSettings->stProgressBarTextLocation.intRow=chProgressBarTextRow;
+    stProgressBarSettings->PROGRESSBAR_COLOR=PROGRESSCOLOR;
+    stProgressBarSettings->intOperationsCount=intOperationsCount;
+}
+void drawProgressBar(u8 chProgressBarRow,u8 chProgressBarColumn,u8 chProgressBarSize,enum CONSOLE_FONT_COLORS FONT_BGCOLOR,enum CONSOLE_FONT_COLORS FONT_FGCOLOR,enum CONSOLE_FONT_WEIGHTS FONT_WEIGHT,enum CONSOLE_FONT_COLORS PROGRESS_BAR_BGCOLOR,struct stProgressBar *stProgressBarSettings,const char *strFormatLabel,...) {
 static char strLabel[51];
 va_list pArguments;
     va_start(pArguments,strFormatLabel);
     vsnprintf(strLabel,sizeof(strLabel),strFormatLabel,pArguments);
     va_end(pArguments);
-    printLocatedText(chProgressBarRow,chProgressBarColumn,"%s ",strLabel);
-    CON_GetPosition(&stProgressBar1.stProgressBarLocation.intColumn,&stProgressBar1.stProgressBarLocation.intRow);
-    setFontBgColor(BGCOLOR);
+    printStyledText(chProgressBarRow,chProgressBarColumn,FONT_BGCOLOR,FONT_FGCOLOR,FONT_WEIGHT,"%s",strLabel);
+    printf(" ");
+    CON_GetPosition(&stProgressBarSettings->stProgressBarLocation.intColumn,&stProgressBarSettings->stProgressBarLocation.intRow);
+    setFontBgColor(PROGRESS_BAR_BGCOLOR);
+    stProgressBarSettings->chProgressBarSize=chProgressBarSize;
     printf("%*s",(unsigned int) chProgressBarSize,"");
     resetPreviousBgColor();
-    stProgressBar1.chProgressBarSize=chProgressBarSize;
-    stProgressBar1.chProgressBarTextSize=chProgressBarTextSize;
-    stProgressBar1.stProgressBarTextLocation.intColumn=chProgressBarTextColumn;
-    stProgressBar1.stProgressBarTextLocation.intRow=chProgressBarTextRow;
-    stProgressBar1.PROGRESSBAR_COLOR=PROGRESSCOLOR;
-    stProgressBar1.intOperationsCount=intOperationsCount;
-    stProgressBar1.intValue=0;
+    stProgressBarSettings->intValue=0;
 }
-void updateProgressBar(const char *strFormatProgressBarText,...) {
+void updateProgressBar(struct stProgressBar *stProgressBarSettings,enum CONSOLE_FONT_COLORS FONT_BGCOLOR,enum CONSOLE_FONT_COLORS FONT_FGCOLOR,enum CONSOLE_FONT_WEIGHTS FONT_WEIGHT,const char *strFormatProgressBarText,...) {
 static char strProgressBarText[256];
 va_list pArguments;
-    if (stProgressBar1.intValue<stProgressBar1.intOperationsCount) {
-        stProgressBar1.intValue=stProgressBar1.intValue+1;
-        setCursorPosition(stProgressBar1.stProgressBarLocation.intRow,stProgressBar1.stProgressBarLocation.intColumn);
-        setFontBgColor(stProgressBar1.PROGRESSBAR_COLOR);
-        printf("%*s",(unsigned int) getRoundNumber((double)stProgressBar1.intValue*(double) stProgressBar1.chProgressBarSize/(double) stProgressBar1.intOperationsCount),"");
+    if (stProgressBarSettings->intValue<stProgressBarSettings->intOperationsCount) {
+        saveCursorPosition();
+        stProgressBarSettings->intValue=stProgressBarSettings->intValue+1;
+        setCursorPosition(stProgressBarSettings->stProgressBarLocation.intRow,stProgressBarSettings->stProgressBarLocation.intColumn);
+        setFontBgColor(stProgressBarSettings->PROGRESSBAR_COLOR);
+        printf("%*s",(unsigned int) getRoundNumber((double)stProgressBarSettings->intValue*(double) stProgressBarSettings->chProgressBarSize/(double) stProgressBarSettings->intOperationsCount),"");
         resetPreviousBgColor();
+        resetSavedCursorPosition();
         va_start(pArguments,strFormatProgressBarText);
-        vsnprintf(strProgressBarText,stProgressBar1.chProgressBarTextSize+1,strFormatProgressBarText,pArguments);
+        vsnprintf(strProgressBarText,stProgressBarSettings->chProgressBarTextSize+1,strFormatProgressBarText,pArguments);
         va_end(pArguments);
-        setCursorPosition(stProgressBar1.stProgressBarTextLocation.intRow,stProgressBar1.stProgressBarTextLocation.intColumn);
-        printf("%-*.*s",(unsigned int) stProgressBar1.chProgressBarTextSize,(unsigned int) stProgressBar1.chProgressBarTextSize,strProgressBarText);
+        printLabel(stProgressBarSettings->stProgressBarTextLocation.intRow,stProgressBarSettings->stProgressBarTextLocation.intColumn,FONT_BGCOLOR,FONT_FGCOLOR,FONT_WEIGHT,stProgressBarSettings->chProgressBarTextSize,strProgressBarText);
     }
+}
+void printLevelsBar(u8 chRow,u8 chColumn,enum CONSOLE_FONT_COLORS LEVELS_BAR_COLOR,enum CONSOLE_FONT_COLORS ACTIVE_LEVEL_COLOR,unsigned char chActiveLevelIndex,unsigned char chLevelsCount,const char *strFirstLevel,...) {
+va_list pArguments;
+unsigned short int intLevelIndex=0;
+const char *strCurrentLevel=strFirstLevel;
+    va_start(pArguments,strFirstLevel);
+    setFontFgColor((intLevelIndex==chActiveLevelIndex)?ACTIVE_LEVEL_COLOR:LEVELS_BAR_COLOR,CONSOLE_FONT_BOLD);
+    printLocatedText(chRow,chColumn,"%s",strCurrentLevel);
+    resetPreviousFgColor();
+    intLevelIndex++;
+    while (intLevelIndex<chLevelsCount) {
+        strCurrentLevel=va_arg(pArguments,const char *);
+        setFontFgColor(LEVELS_BAR_COLOR,CONSOLE_FONT_BOLD);
+        printf(" > ");
+        resetPreviousFgColor();
+        setFontFgColor((intLevelIndex==chActiveLevelIndex)?ACTIVE_LEVEL_COLOR:LEVELS_BAR_COLOR,CONSOLE_FONT_BOLD);
+        printf("%s",strCurrentLevel);
+        resetPreviousFgColor();
+        intLevelIndex++;
+    }
+    va_end(pArguments);
 }

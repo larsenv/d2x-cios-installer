@@ -1,6 +1,11 @@
 #ifndef _LIBIOS_H_
 #define _LIBIOS_H_
 #include <ogc/es.h>
+#define HAVE_AHBPROT ((*(volatile u32*)0xcd800064 == 0xFFFFFFFF) ? 1 : 0)
+enum IOS_TYPES {
+    STUB_IOS=1,
+    ACTIVE_IOS=2
+};
 struct stModule {
    u32 *intModuleSize;
    u8 *chModuleContent;
@@ -43,6 +48,8 @@ void freeExternalCiosModules();
 u8 *getCiosModule(const char *strModuleName,char *strCiosContentsFolder,u32 **intModuleSize);
 struct stCiosGroup *getCiosMaps(const char *strXmlCiosMap,const char *strHomebrewAppFolder,unsigned int *intCiosCount);
 s32 addModule(tmd *pTmd,struct stModule *stCiosModule,u32 intContentId,const char *strNandContentFileName);
-u8 getLoadedIos();
-u16 getLoadedIosVersion();
+u8 getRuntimeIos();
+u16 getRuntimeIosVersion();
+u32 applyAhbProtPatchs(bool blnVerbose);
+u8 getSlotsMap(u8 *intSlotsMap);
 #endif

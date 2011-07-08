@@ -2,6 +2,7 @@
 #define _TITLE_H_
 #include <gctypes.h>
 #include <ogc/es.h>
+#include "gui.h"
 u8 *getContentCryptParameter(u8 *chCryptParameter,u16 intTmdModuleId);
 void decryptContent(u8 *chCryptParameter, u8 *chEncryptedBuffer, u8 *chDecryptedBuffer,u32 intContentSize);
 void encryptContent(u8 *chCryptParameter,u8 *chDecryptedBuffer,u8 *chEncryptedBuffer,u32 intContentSize);
@@ -15,7 +16,7 @@ void bruteTicket(tik *pTik);
 void forgeTmd(signed_blob *sTmd);
 void forgeTicket(signed_blob *sTik);
 s32 installTicket(const signed_blob *sTik, const signed_blob *sCerts,u32 intCertsSize,const signed_blob *sCrl,u32 intCrlsize);
-s32 installTmdContents(const signed_blob *sTmd,const signed_blob *sCerts,u32 intCertsSize,const signed_blob *sCrl,u32 intCrlsize,const char *strNandContentLocation,bool blnProgressBar);
+s32 installTmdContents(const signed_blob *sTmd,const signed_blob *sCerts,u32 intCertsSize,const signed_blob *sCrl,u32 intCrlsize,const char *strNandContentLocation,struct stProgressBar *stProgressBarSettings);
 u64 *getTitles(u32 *intTitlesCount);
-u8 getSlotsMap(u8 *intSlotsMap);
+signed_blob *getStoredTmd(u64 intTitleId,u32 *intTmdSize);
 #endif

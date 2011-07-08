@@ -10,4 +10,6 @@ char *getDirName(const char *strFileName);
 void writeBinaryFile(const char *strFileName,void *varContent,size_t intContentSize);
 void *getFileContent(const char *strFileName,size_t *intReadBytesCount);
 void *getFileDataBlock(FILE *fp,unsigned int intOffset,size_t *intDataSize);
+bool isDirectory(const char *strDirectory);
+bool removeDirectory(const char *strDirectory);
 #endif
