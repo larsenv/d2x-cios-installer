@@ -73,7 +73,7 @@ int i;
             snprintf(strCacheModuleFileName,sizeof(strCacheModuleFileName),"%s/%s.app",strCiosContentsFolder,strModuleName);
             stExternalCiosModules[intExternalCiosModulesCount].strModuleName=strdup(strModuleName);
             if ((stExternalCiosModules[intExternalCiosModulesCount].intModuleSize=(u32 *) malloc(sizeof(u32)))!=NULL) {
-                stExternalCiosModules[intExternalCiosModulesCount].chModuleContent=getFileContent(strCacheModuleFileName,stExternalCiosModules[intExternalCiosModulesCount].intModuleSize);
+                stExternalCiosModules[intExternalCiosModulesCount].chModuleContent=getFileContent(strlwr(strCacheModuleFileName),stExternalCiosModules[intExternalCiosModulesCount].intModuleSize);
                 varout=stExternalCiosModules[intExternalCiosModulesCount].chModuleContent;
                 *intModuleSize=stExternalCiosModules[intExternalCiosModulesCount].intModuleSize;
                 intExternalCiosModulesCount++;
