@@ -16,14 +16,19 @@ va_list pArguments;
     va_end(pArguments);
     chCurrentOffset=&strTextBuffer[0];
     while (strlen(chCurrentOffset)) {
-        strBreakTextLine=getBreakString(chCurrentOffset,chBreakChar,intMaxLineSize);
-        printf("%s%s",(varout)?"\n":"",strBreakTextLine);
-        chCurrentOffset=chCurrentOffset+strlen(strBreakTextLine);
-        if (*chCurrentOffset==chBreakChar) {
-            chCurrentOffset=chCurrentOffset+1;
+        if ((strBreakTextLine=getBreakString(chCurrentOffset,chBreakChar,intMaxLineSize))==NULL) {
+            chCurrentOffset=&strTextBuffer[strlen(strTextBuffer)];
         }
-        varout++;
-        free(strBreakTextLine);
+        else {
+            printf("%s%s",(varout)?"\n":"",strBreakTextLine);
+            chCurrentOffset=chCurrentOffset+strlen(strBreakTextLine);
+            if (*chCurrentOffset==chBreakChar) {
+                chCurrentOffset=chCurrentOffset+1;
+            }
+            varout++;
+            free(strBreakTextLine);
+            strBreakTextLine=NULL;
+        }
     }
     return varout;
 }
@@ -42,13 +47,20 @@ void *varTemp;
 }
 void printRepeatString(unsigned int intRepeatsCount,const char *strFormatValue,...) {
 static char strTextBuffer[1024];
-unsigned int i;
 va_list pArguments;
     va_start(pArguments,strFormatValue);
     vsnprintf(strTextBuffer,sizeof(strTextBuffer),strFormatValue,pArguments);
     va_end(pArguments);
-    for (i=0;i<intRepeatsCount;i++) {
+    while (intRepeatsCount) {
+        intRepeatsCount--;
         printf("%s",strTextBuffer);
     }
 }
-
+char *getFormattedString(const char *strFormatString,...) {
+static char strFormattedString[1024];
+va_list pArguments;
+    va_start(pArguments,strFormatString);
+    vsnprintf(strFormattedString,sizeof(strFormattedString),strFormatString,pArguments);
+    va_end(pArguments);
+    return getCloneString(strFormattedString);
+}

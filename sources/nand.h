@@ -6,4 +6,5 @@ s32 deleteNandFile(const char *strFileName);
 s32 createNandFile(const char *strFileName);
 s32 writeNandFile(const char *strNandFileName,u8 *chFileContent,u32 intContentSize);
 s32 createNandDirectory(const char *strFolderName);
+s32 writeNandTmdFile(u64 intTitleId,u8 *sTmd,u32 intTmdSize);
 #endif

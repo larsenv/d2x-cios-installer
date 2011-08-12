@@ -24,16 +24,25 @@ void clearConsoleLine() {
 	fflush(stdout);
 }
 void setFontFgColor(enum CONSOLE_FONT_COLORS FONT_COLOR,enum CONSOLE_FONT_WEIGHTS FONT_WEIGHT) {
+    if (FONT_COLOR==CONSOLE_FONT_CURRENT_COLOR) {
+        FONT_COLOR=CURRENT_FONT_FGCOLOR;
+    }
+    if (CONSOLE_FONT_CURRENT_WEIGHT==FONT_WEIGHT) {
+        FONT_WEIGHT=CURRENT_FONT_WEIGHT;
+    }
     PREVIOUS_FONT_FGCOLOR=CURRENT_FONT_FGCOLOR;
     PREVIOUS_FONT_WEIGHT=CURRENT_FONT_WEIGHT;
-	printf("\x1b[%u;%um",(u8) FONT_COLOR+30,FONT_WEIGHT);
-	CURRENT_FONT_FGCOLOR=FONT_COLOR;
+    printf("\x1b[%u;%um",(u8) FONT_COLOR+30,FONT_WEIGHT);
+    CURRENT_FONT_FGCOLOR=FONT_COLOR;
     CURRENT_FONT_WEIGHT=FONT_WEIGHT;
 }
 void setFontBgColor(enum CONSOLE_FONT_COLORS FONT_COLOR) {
-	PREVIOUS_FONT_BGCOLOR=CURRENT_FONT_BGCOLOR;
-	printf("\x1b[%um",(u8) FONT_COLOR+40);
-	CURRENT_FONT_BGCOLOR=FONT_COLOR;
+    if (FONT_COLOR==CONSOLE_FONT_CURRENT_COLOR) {
+        FONT_COLOR=CURRENT_FONT_FGCOLOR;
+    }
+    PREVIOUS_FONT_BGCOLOR=CURRENT_FONT_BGCOLOR;
+    printf("\x1b[%um",(u8) FONT_COLOR+40);
+    CURRENT_FONT_BGCOLOR=FONT_COLOR;
 }
 void setFontStyle(enum CONSOLE_FONT_COLORS FONT_BGCOLOR,enum CONSOLE_FONT_COLORS FONT_FGCOLOR,enum CONSOLE_FONT_WEIGHTS FONT_WEIGHT) {
     setFontBgColor(FONT_BGCOLOR);
@@ -58,6 +67,7 @@ void *pFramebuffer=NULL;
 GXRModeObj *pRmode=NULL;
 double dbConsoleFrameX[2]={dbLeft,dbLeft},dbConsoleFrameY[2]={dbTop,dbTop},dbBgImgXScaleFactor=1,dbBgImgYScaleFactor=1,dbReferenceWidth,dbReferenceHeight;
 int intConsoleColumnsCount,intConsoleRowsCount;
+struct stConsoleCursorLocation stTexteLocation;
     VIDEO_Init();
     pRmode=VIDEO_GetPreferredMode(NULL);
     pFramebuffer=MEM_K0_TO_K1(SYS_AllocateFramebuffer(pRmode));
@@ -100,7 +110,7 @@ int intConsoleColumnsCount,intConsoleRowsCount;
     resetDefaultFontSyle();
     if (*strSplashScreenMessage) {
         CON_GetMetrics(&intConsoleColumnsCount,&intConsoleRowsCount);
-        printAlignedText(ALIGN_CENTER,ALIGN_MIDDLE,0,0,intConsoleRowsCount-1,intConsoleColumnsCount-1,true,true,strSplashScreenMessage);
+        printAlignedText(ALIGN_CENTER,ALIGN_MIDDLE,0,0,intConsoleRowsCount-1,intConsoleColumnsCount-1,true,true,&stTexteLocation,"%s",strSplashScreenMessage);
     }
 
 }
@@ -139,4 +149,19 @@ int getConsoleRow() {
 int intConsoleColumn,intConsoleRow;
     CON_GetPosition(&intConsoleColumn,&intConsoleRow);
     return intConsoleRow;
+}
+enum CONSOLE_FONT_COLORS getSavedBgColor() {
+    return CURRENT_FONT_BGCOLOR;
+}
+enum CONSOLE_FONT_COLORS getSavedFgColor() {
+    return CURRENT_FONT_FGCOLOR;
+}
+enum CONSOLE_FONT_WEIGHTS getSavedFontWeight() {
+    return CURRENT_FONT_WEIGHT;
+}
+u8 getSavedConsoleRow() {
+    return CONSOLE_CURSOR_CURRENT_ROW;
+}
+u8 getSavedConsoleColumn() {
+    return CONSOLE_CURSOR_CURRENT_COLUMN;
 }

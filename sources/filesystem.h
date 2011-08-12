@@ -2,8 +2,9 @@
 #define _FILESYSTEM_H_
 #include <gctypes.h>
 enum STORAGE_DEVICES {
-    SD_STORAGE=1,
-    USB_STORAGE=2
+    SD_STORAGE_DEVICE=1,
+    USB_STORAGE_DEVICE=2,
+    ALL_DEVICES=SD_STORAGE_DEVICE | USB_STORAGE_DEVICE
 };
 bool isMountedSD();
 void unmountSD();
@@ -14,6 +15,6 @@ bool mountUSB();
 bool isMountedNANDFS();
 void unmountNandFs();
 bool mountNandFs();
-void unmountFatFs(char *strDevice);
-char *mountFatFs(unsigned int intFatDevicePriority);
+void unmountFatDevice(char *strDevice);
+char *mountFatDevice(unsigned char chFatDevicesPriority);
 #endif

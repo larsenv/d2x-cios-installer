@@ -5,6 +5,7 @@
 #include <string.h>
 #include "nand.h"
 #include "debug.h"
+#include "title.h"
 bool existNandFile(const char *strFileName) {
 bool varout=true;
 int fd;
@@ -26,7 +27,7 @@ s32 varout=ISFS_OK;
 s32 createNandFile(const char *strFileName) {
 s32 varout=-1;
     if (deleteNandFile(strFileName)==ISFS_OK) {
-        varout=ISFS_CreateFile(strFileName,0,3,1,1);
+        varout=ISFS_CreateFile(strFileName,0,ISFS_OPEN_RW,ISFS_OPEN_RW,ISFS_OPEN_RW);
     }
     return varout;
 }
@@ -64,8 +65,13 @@ u32 intReadBytes;
 }
 s32 createNandDirectory(const char *strFolderName) {
 s32 varout;
-    if ((varout=ISFS_CreateDir(strFolderName,0,3,1,1))) {
+    if ((varout=ISFS_CreateDir(strFolderName,0,ISFS_OPEN_RW,ISFS_OPEN_RW,ISFS_OPEN_RW))) {
         printDebugMsg(ERROR_DEBUG_MESSAGE,"\nISFS_CreateDir(/tmp/patchmii) returned %d",varout);
     }
     return varout;
+}
+s32 writeNandTmdFile(u64 intTitleId,u8 *sTmd,u32 intTmdSize) {
+static char strNandTmdFileName[43];
+    sprintf(strNandTmdFileName,"/title/%08x/%08x/content/title.tmd",getMajorTitleId(intTitleId),getMinorTitleId(intTitleId));
+    return writeNandFile(strNandTmdFileName,sTmd,intTmdSize);
 }

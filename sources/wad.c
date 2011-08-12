@@ -56,8 +56,10 @@ u8 *pTmdBuffer;
                 varout=true;
             }
             free(pTmdBuffer);
+            pTmdBuffer=NULL;
         }
         free(stWadTitleHeader);
+        stWadTitleHeader=NULL;
     }
     return varout;
 }
@@ -117,6 +119,7 @@ unsigned char i;
 void closeWad(unsigned char chOpenWadFileId) {
     if (isWadOpened(chOpenWadFileId)) {
         free(stWadFileMaps[chOpenWadFileId].stTmdContents);
+        stWadFileMaps[chOpenWadFileId].stTmdContents=NULL;
         fclose(fpwad[chOpenWadFileId]);
         fpwad[chOpenWadFileId]=NULL;
     }

@@ -32,6 +32,9 @@ tmd *pPrebuildTmd;
 #else
 int intConsoleRow;
 struct stProgressBar stProgressBarSettings;
+u16 intTitleRevision=0;
+u64 intTitleId;
+struct stConsoleCursorLocation stProgressBarLabelLocation;
 #endif
 int intReturnValue,varout=0,intConsoleColumnsCount;
 u16 i;
@@ -50,9 +53,10 @@ bool blnFixTmd=false;
 #if TESTING_CODE
     printDebugMsg(NORMAL_DEBUG_MESSAGE,"[Downloading IOS%d metadata]\n",stSelectedCios->stBase.chBase);
 #else
+    intTitleId=getFullTitleId(intMajorTitleId,chSelectedCiosSlot);
+    //intTitleRevision=downgradeStoredOverwrittenTitleVersion(intTitleId,intCiosRevision);
     intConsoleRow=getConsoleRow();
-    setProgressBarSettings(&stProgressBarSettings,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,3);
-    drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,&stProgressBarSettings,"[*] Downloading IOS%d metadata",stSelectedCios->stBase.chBase);
+    drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,3,&stProgressBarSettings,&stProgressBarLabelLocation,"[*] Downloading IOS%d metadata",stSelectedCios->stBase.chBase);
     printf("\n\n");
 #endif
 	snprintf(strNusObjectUrl,sizeof(strNusObjectUrl),"http://nus.cdn.shop.wii.com/ccs/download/%08x%08x/tmd.%d",intMajorTitleId,stSelectedCios->stBase.chBase,stSelectedCios->stBase.intBaseRevision);
@@ -70,6 +74,7 @@ bool blnFixTmd=false;
 	else {
         memcpy(pTmdAlignedbuffer,pStreamTmdBuffer,MIN(intTmdSize,sizeof(pTmdAlignedbuffer)));
         free(pStreamTmdBuffer);
+        pStreamTmdBuffer=NULL;
         sTmd =(signed_blob *)pTmdAlignedbuffer;
         if (IS_VALID_SIGNATURE(sTmd)) {
 #if TESTING_CODE
@@ -86,6 +91,7 @@ bool blnFixTmd=false;
             else {
                 memcpy(pTikAlignedBuffer,pStreamTikBuffer,MIN(intTicketSize,sizeof(pTikAlignedBuffer)));
                 free(pStreamTikBuffer);
+                pStreamTikBuffer=NULL;
                 sTik=(signed_blob *)pTikAlignedBuffer;
                 if (IS_VALID_SIGNATURE(sTik)) {
                     sCerts=(signed_blob *)HAXX_certs;
@@ -106,8 +112,7 @@ bool blnFixTmd=false;
 #else
                             updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Done.");
                             intConsoleRow=getConsoleRow();
-                            setProgressBarSettings(&stProgressBarSettings,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,pTmd->num_contents+1);
-                            drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,&stProgressBarSettings,"[*] Downloading and patching contents (%d)",pTmd->num_contents);
+                            drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,pTmd->num_contents+1,&stProgressBarSettings,&stProgressBarLabelLocation,"[*] Downloading and patching contents (%d)",pTmd->num_contents);
                             printf("\n\n");
 #endif
                             for (i=0;i<pTmd->num_contents;i++) {
@@ -128,6 +133,7 @@ bool blnFixTmd=false;
                                     if (intContentSize % 16) {
                                         printDebugMsg(ERROR_DEBUG_MESSAGE,"\nERROR: downloaded %s content size %u is not a multiple of 16",strContentId,intContentSize);
                                         free(chCryptedContent);
+                                        chCryptedContent=NULL;
                                         varout=4;
                                         break;
                                     }
@@ -135,6 +141,7 @@ bool blnFixTmd=false;
                                         if (intContentSize<pTmdContent[i].size) {
                                             printDebugMsg(ERROR_DEBUG_MESSAGE,"\nERROR: only downloaded %u/%llu bytes",intContentSize,pTmdContent[i].size);
                                             free(chCryptedContent);
+                                            chCryptedContent=NULL;
                                             varout=5;
                                             break;
                                         }
@@ -142,6 +149,7 @@ bool blnFixTmd=false;
                                             if ((chDecryptedContent=malloc(intContentSize))==NULL) {
                                                 printDebugMsg(ERROR_DEBUG_MESSAGE,"\nERROR: failed to allocate chDecryptedContent (%u bytes)",intContentSize);
                                                 free(chCryptedContent);
+                                                chCryptedContent=NULL;
                                                 varout=6;
                                                 break;
                                             }
@@ -152,6 +160,8 @@ bool blnFixTmd=false;
                                                     printDebugMsg(ERROR_DEBUG_MESSAGE,"\nhash BAD");
                                                     free(chDecryptedContent);
                                                     free(chCryptedContent);
+                                                    chDecryptedContent=NULL;
+                                                    chCryptedContent=NULL;
                                                     varout=7;
                                                     break;
                                                 }
@@ -164,6 +174,8 @@ bool blnFixTmd=false;
                                                                     printDebugMsg(ERROR_DEBUG_MESSAGE,"\nFail to patch content %s",strContentId);
                                                                     free(chDecryptedContent);
                                                                     free(chCryptedContent);
+                                                                    chDecryptedContent=NULL;
+                                                                    chCryptedContent=NULL;
                                                                     varout=8;
                                                                     break;
                                                                 }
@@ -186,6 +198,8 @@ bool blnFixTmd=false;
                                                             printDebugMsg(ERROR_DEBUG_MESSAGE,"\nUnexpected content id detected (%s) during patching process",strContentId);
                                                             free(chDecryptedContent);
                                                             free(chCryptedContent);
+                                                            chDecryptedContent=NULL;
+                                                            chCryptedContent=NULL;
                                                             varout=10;
                                                             break;
                                                         }
@@ -204,6 +218,8 @@ bool blnFixTmd=false;
                                                         printDebugMsg(ERROR_DEBUG_MESSAGE,"\nwriteNandFile(%x) returned error %d",pTmdContent[i].cid,intReturnValue);
                                                         free(chDecryptedContent);
                                                         free(chCryptedContent);
+                                                        chDecryptedContent=NULL;
+                                                        chCryptedContent=NULL;
                                                         varout=9;
                                                         break;
                                                     }
@@ -211,6 +227,8 @@ bool blnFixTmd=false;
                                                 }
                                                 free(chDecryptedContent);
                                                 free(chCryptedContent);
+                                                chDecryptedContent=NULL;
+                                                chCryptedContent=NULL;
                                             }
                                         }
                                     }
@@ -222,8 +240,7 @@ bool blnFixTmd=false;
 #else
                                 updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Done.");
                                 intConsoleRow=getConsoleRow();
-                                setProgressBarSettings(&stProgressBarSettings,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,stSelectedCios->intModulesCount+1);
-                                drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,&stProgressBarSettings,"[*] Adding contents (%d)",stSelectedCios->intModulesCount);
+                                drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,stSelectedCios->intModulesCount+1,&stProgressBarSettings,&stProgressBarLabelLocation,"[*] Adding contents (%d)",stSelectedCios->intModulesCount);
                                 printf("\n\n");
 #endif
                                 if (stSelectedCios->intModulesCount) {
@@ -260,8 +277,7 @@ bool blnFixTmd=false;
 #else
                                     updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Done.");
                                     intConsoleRow=getConsoleRow();
-                                    setProgressBarSettings(&stProgressBarSettings,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,3);
-                                    drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,&stProgressBarSettings,"[*] Fixing tmd and ticket files");
+                                    drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,3,&stProgressBarSettings,&stProgressBarLabelLocation,"[*] Fixing tmd and ticket files");
                                     printf("\n\n");
 #endif
                                     if (stSelectedCios->stBase.chBase!=chSelectedCiosSlot) {
@@ -297,6 +313,7 @@ bool blnFixTmd=false;
                                         strDeviceFileName=getDeviceFileName(strCacheFolder);
                                         snprintf(strPrebuildCiosFolder,sizeof(strPrebuildCiosFolder),"%s:/%d-%d",strDeviceFileName,stSelectedCios->stBase.chBase,intCiosRevision);
                                         free(strDeviceFileName);
+                                        strDeviceFileName=NULL;
                                         if (!validCiosContents(stSelectedCios,intCiosRevision,strModWiiTestFolder,strPrebuildCiosFolder)) {
                                             printDebugMsg(NORMAL_DEBUG_MESSAGE,"ModWii and prebuild cIOS contents differ\n");
                                         }
@@ -309,6 +326,7 @@ bool blnFixTmd=false;
                                             waitPadsKeyPressed("Press any button to continue...\n");
                                             showTmdsDiffs(pTmd,pPrebuildTmd);
                                             free(pStreamTmdBuffer);
+                                            pStreamTmdBuffer=NULL;
                                         }
                                         else {
                                             printDebugMsg(NORMAL_DEBUG_MESSAGE,"%s file not found\n",strPrebuildTmdFileName);
@@ -319,8 +337,7 @@ bool blnFixTmd=false;
                                     updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Fixing tmd...");
                                     updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Done.");
                                     intConsoleRow=getConsoleRow();
-                                    setProgressBarSettings(&stProgressBarSettings,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,2+pTmd->num_contents);
-                                    drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,&stProgressBarSettings,"[*] Installing Title");
+                                    drawProgressBar(intConsoleRow,-1,10,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,CONSOLE_FONT_WHITE,intConsoleColumnsCount,0,intConsoleRow+1,CONSOLE_FONT_GREEN,2+pTmd->num_contents,&stProgressBarSettings,&stProgressBarLabelLocation,"[*] Installing Title");
                                     printf("\n\n");
                                     updateProgressBar(&stProgressBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Installing ticket...");
                                     if ((intReturnValue=installTicket(sTik,sCerts,HAXX_certs_size,NULL,0))<0) {
@@ -362,5 +379,10 @@ bool blnFixTmd=false;
             varout=17;
         }
 	}
+#if TESTING_CODE == 0
+	if (varout) {
+        //replaceStoredTitleVersion(intTitleId,0,intTitleRevision);
+	}
+#endif
 	return varout;
 }

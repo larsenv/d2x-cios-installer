@@ -5,4 +5,5 @@ bool isInRange(double dbValue,double dbMinRangeValue,double dbMaxRangeValue,bool
 double getRoundNumber(double dbValue);
 double getMinValue(double dbValue1,double dbValue2);
 double getMaxValue(double dbValue1,double dbValue2);
+double getReducedRangedNumber(double dbValue,double dbMinRange,double dbMaxRange);
 #endif

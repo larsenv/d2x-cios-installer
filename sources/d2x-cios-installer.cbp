@@ -140,6 +140,13 @@
 		<Unit filename="libstring.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="libtime.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="libtime.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="libutils.c">
 			<Option compilerVar="CC" />
 			<Option target="&lt;{~None~}&gt;" />
@@ -214,6 +221,13 @@
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="tests.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="thread.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="thread.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="title.c">

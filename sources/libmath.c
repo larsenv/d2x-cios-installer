@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdlib.h>
 #include "libmath.h"
 bool isInRange(double dbValue,double dbMinRangeValue,double dbMaxRangeValue,bool blnIncludeMinRange,bool blnIncludeMaxRange) {
 bool varout;
@@ -26,4 +27,14 @@ double getMinValue(double dbValue1,double dbValue2) {
 }
 double getMaxValue(double dbValue1,double dbValue2) {
     return (dbValue1>dbValue2)?dbValue1:dbValue2;
+}
+double getReducedRangedNumber(double dbValue,double dbMinRange,double dbMaxRange) {
+double dbRangeInterval=dbMaxRange-dbMinRange+1,dbIncrementFactor=dbMinRange-dbValue;
+    if (dbIncrementFactor) {
+        dbIncrementFactor=dbIncrementFactor/abs(dbIncrementFactor);
+    }
+    while (!isInRange(dbValue,dbMinRange,dbMaxRange,true,true)) {
+        dbValue=dbValue+dbIncrementFactor*dbRangeInterval;
+    }
+    return dbValue;
 }
