@@ -14,6 +14,15 @@
 #include "macro.h"
 #include "d2x-cios-installer.h"
 const u8 aesCommonKey[16]={0xeb,0xe4,0x2a,0x22,0x5e,0x85,0x93,0xe4,0x48,0xd9,0xc5,0x45,0x73,0x81,0xaa,0xf7};
+u32 getMajorTitleId(u64 intTitleId) {
+    return (u32) (intTitleId >> 32);
+}
+u32 getMinorTitleId(u64 intTitleId) {
+    return (u32) (intTitleId & 0xFFFFFFFF);
+}
+u64 getFullTitleId(u32 intMajorTitleId,u32 intMinorTitleId) {
+    return (u64) intMajorTitleId << 32 | (u64) intMinorTitleId;
+}
 u8 *getContentCryptParameter(u8 *chCryptParameter,u16 intTmdModuleId) {
     memset(chCryptParameter,0,16);
     return (u8 *) memcpy(chCryptParameter,&intTmdModuleId,2);
@@ -99,15 +108,15 @@ u8 *pEnckey = (u8*) &pTik->cipher_title_key;
 	memset(chTitleId,0,sizeof(chTitleId));
 	memcpy(chTitleId,&pTik->titleid,sizeof(pTik->titleid));
 	aes_set_key((u8*)aesCommonKey);
-	aes_decrypt(chTitleId, chCryptedKey, chDecryptedkey, sizeof(chCryptedKey));
-	pTik->titleid=(u64)intMajorTitleId << 32 | (u64)intMinorTitleId;
+	aes_decrypt(chTitleId,chCryptedKey,chDecryptedkey,sizeof(chCryptedKey));
+	pTik->titleid=getFullTitleId(intMajorTitleId,intMinorTitleId);
 	memset(chTitleId,0,sizeof(chTitleId));
 	memcpy(chTitleId,&pTik->titleid,sizeof(pTik->titleid));
 	aes_encrypt(chTitleId,chDecryptedkey,chCryptedKey,sizeof(chDecryptedkey));
 	memcpy(pEnckey,chCryptedKey,sizeof(chCryptedKey));
 }
 void changeTmdTitleId(signed_blob *sTmd,u32 intMajorTitleId,u32 intMinorTitleId) {
-	((tmd*)SIGNATURE_PAYLOAD(sTmd))->title_id=(u64)intMajorTitleId << 32 | (u64)intMinorTitleId;
+	((tmd*)SIGNATURE_PAYLOAD(sTmd))->title_id=getFullTitleId(intMajorTitleId,intMinorTitleId);
 }
 void setZeroSignature(signed_blob *sSig) {
   u8 *pSig=(u8 *) sSig;
@@ -116,7 +125,7 @@ void setZeroSignature(signed_blob *sSig) {
 void bruteTmd(tmd *pTmd) {
 u16 fill;
 sha1 hash;
-    for(fill=0;fill<65535;fill++) {
+    for (fill=0;fill<65535;fill++) {
         pTmd->fill3=fill;
         SHA1((u8 *)pTmd,TMD_SIZE(pTmd),hash);
         if (hash[0]==0) return;
@@ -127,7 +136,7 @@ sha1 hash;
 void bruteTicket(tik *pTik) {
 u16 fill;
 sha1 hash;
-    for(fill=0;fill<65535;fill++) {
+    for (fill=0;fill<65535;fill++) {
         pTik->padding=fill;
         SHA1((u8 *)pTik,sizeof(tik),hash);
         if (hash[0]==0) return;
@@ -192,15 +201,94 @@ u64 *varout=NULL;
     }
     return varout;
 }
+bool existTitle(u64 intTitleId) {
+static char strNandTmdFileName[43];
+    snprintf(strNandTmdFileName,sizeof(strNandTmdFileName),"/title/%08x/%08x/content/title.tmd",getMajorTitleId(intTitleId),getMinorTitleId(intTitleId));
+    return existNandFile(strNandTmdFileName);
+}
 signed_blob *getStoredTmd(u64 intTitleId,u32 *intTmdSize) {
 signed_blob *varout=NULL;
-	if (ES_GetStoredTMDSize(intTitleId,intTmdSize)>=0) {
-		if ((varout=(signed_blob *) memalign(32,(*intTmdSize+31)&(~31)))!=NULL) {
+    if (ES_GetStoredTMDSize(intTitleId,intTmdSize)>=0) {
+        if ((varout=(signed_blob *) memalign(32,(*intTmdSize+31)&(~31)))!=NULL) {
             if (ES_GetStoredTMD(intTitleId,varout,*intTmdSize)<0) {
                 free(varout);
                 varout=NULL;
             }
-		}
+            else {
+                if (!IS_VALID_SIGNATURE(varout)) {
+                    free(varout);
+                    varout=NULL;
+                }
+            }
+        }
+    }
+	return varout;
+}
+u16 getStoredTitleVersion(u64 intTitleId) {
+u16 varout=0;
+signed_blob *sTmd;
+tmd *pTmd;
+u32 intTmdSize;
+    if ((sTmd=getStoredTmd(intTitleId,&intTmdSize))!=NULL) {
+        pTmd=(tmd *) SIGNATURE_PAYLOAD(sTmd);
+        varout=pTmd->title_version;
+        free(sTmd);
+        sTmd=NULL;
+    }
+    return varout;
+}
+s32 setStoredTitleVersion(u64 intTitleId,u16 intVersion) {
+s32 varout=0;
+u8 *sTmd=NULL;
+tmd *pTmd;
+u32 intTmdSize=0;
+	if ((sTmd=(u8 *) getStoredTmd(intTitleId,&intTmdSize))!=NULL) {
+        pTmd=(tmd *) SIGNATURE_PAYLOAD(sTmd);
+        pTmd->title_version=intVersion;
+        writeNandTmdFile(intTitleId,sTmd,intTmdSize);
+        free(sTmd);
+        sTmd=NULL;
+	}
+	return varout;
+}
+u16 downgradeStoredOverwrittenTitleVersion(u64 intTitleId,u16 intFutureTitleVersion) {
+u16 varout=0;
+u8 *sTmd=NULL;
+tmd *pTmd;
+u32 intTmdSize=0;
+    if (intFutureTitleVersion) {
+        if ((sTmd=(u8 *) getStoredTmd(intTitleId,&intTmdSize))!=NULL) {
+            pTmd=(tmd *) SIGNATURE_PAYLOAD(sTmd);
+            if (pTmd->title_version>intFutureTitleVersion) {
+                varout=pTmd->title_version;
+                pTmd->title_version=0;
+                if (writeNandTmdFile(intTitleId,sTmd,intTmdSize)<0) {
+                    varout=0;
+                }
+            }
+            free(sTmd);
+            sTmd=NULL;
+        }
+	}
+	return varout;
+}
+u16 replaceStoredTitleVersion(u64 intTitleId,u16 intTitleVersion,u16 intReplaceTitleVersion) {
+u16 varout=0;
+u8 *sTmd=NULL;
+tmd *pTmd;
+u32 intTmdSize=0;
+    if (intReplaceTitleVersion) {
+        if ((sTmd=(u8 *) getStoredTmd(intTitleId,&intTmdSize))!=NULL) {
+            pTmd=(tmd *) SIGNATURE_PAYLOAD(sTmd);
+            if ((varout=pTmd->title_version)==intTitleVersion) {
+                pTmd->title_version=intReplaceTitleVersion;
+                if (writeNandTmdFile(intTitleId,sTmd,intTmdSize)>0) {
+                    varout=intReplaceTitleVersion;
+                }
+            }
+            free(sTmd);
+            sTmd=NULL;
+        }
 	}
 	return varout;
 }

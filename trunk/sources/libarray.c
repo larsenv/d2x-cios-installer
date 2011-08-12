@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include "libarray.h"
 bool inArray(void *varArray,unsigned int intItemsCount,size_t intItemSize,void *varValue) {
 bool varout=false;
@@ -11,18 +12,29 @@ bool varout=false;
     }
     return varout;
 }
+unsigned int getArrayValueIndex(void *varArray,unsigned int intItemsCount,size_t intItemSize,void *varValue) {
+unsigned int varout=intItemsCount;
+    while (intItemsCount) {
+        intItemsCount--;
+        if (!memcmp(varArray+intItemsCount*intItemSize,varValue,intItemSize)) {
+            varout=intItemsCount;
+            break;
+        }
+    }
+    return varout;
+}
 int getArrayMinValueIndex(const void *varArrayValues,unsigned int intItemsCount,size_t intItemSize) {
 int varout=-1;
 void *pCurrentArrayItem,*pCurrentItemMinValue;
-unsigned int i;
     if (intItemsCount) {
         varout=0;
         pCurrentItemMinValue=(void *) varArrayValues;
-        for (i=1;i<intItemsCount;i++) {
-            pCurrentArrayItem=(void *) varArrayValues+i*intItemSize;
+        while (intItemsCount>1) {
+            intItemsCount--;
+            pCurrentArrayItem=(void *) varArrayValues+intItemsCount*intItemSize;
             if (memcmp(pCurrentArrayItem,pCurrentItemMinValue,intItemSize)<0) {
                 pCurrentItemMinValue=pCurrentArrayItem;
-                varout=i;
+                varout=intItemsCount;
             }
         }
     }
@@ -31,17 +43,44 @@ unsigned int i;
 int getArrayMaxValueIndex(const void *varArrayValues,unsigned int intItemsCount,size_t intItemSize) {
 int varout=-1;
 void *pCurrentArrayItem,*pCurrentItemMaxValue;
-unsigned int i;
     if (intItemsCount) {
         varout=0;
         pCurrentItemMaxValue=(void *) varArrayValues;
-        for (i=1;i<intItemsCount;i++) {
-            pCurrentArrayItem=(void *) varArrayValues+i*intItemSize;
+        while (intItemsCount>1) {
+            intItemsCount--;
+            pCurrentArrayItem=(void *) varArrayValues+intItemsCount*intItemSize;
             if (memcmp(pCurrentArrayItem,pCurrentItemMaxValue,intItemSize)>0) {
                 pCurrentItemMaxValue=pCurrentArrayItem;
-                varout=i;
+                varout=intItemsCount;
             }
         }
     }
+    return varout;
+}
+unsigned int printStringArrayValues(const char *strFormatIndex,const char *strFormatValue,const char **strArray,unsigned int intArraySize) {
+unsigned int varout=0,i;
+static char strFormattedText[1024];
+    for (i=0;i<intArraySize;i++) {
+        snprintf(strFormattedText,sizeof(strFormattedText),strFormatIndex,i);
+        printf("%s",strFormattedText);
+        varout=varout+strlen(strFormattedText);
+        snprintf(strFormattedText,sizeof(strFormattedText),strFormatValue,strArray[i]);
+        printf("%s",strFormattedText);
+        varout=varout+strlen(strFormattedText);
+	}
+    return varout;
+}
+unsigned int printJoinedStringArrayValues(const char *strFormatValue,const char *strJoinString,const char **strArray,unsigned int intArraySize) {
+unsigned int varout=0,i;
+static char strFormattedText[1024];
+    for (i=0;i<intArraySize;i++) {
+        if (i) {
+            printf("%s",strJoinString);
+            varout=varout+strlen(strJoinString);
+        }
+        snprintf(strFormattedText,sizeof(strFormattedText),strFormatValue,strArray[i]);
+        printf("%s",strFormattedText);
+        varout=varout+strlen(strFormattedText);
+	}
     return varout;
 }

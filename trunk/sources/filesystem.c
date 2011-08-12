@@ -1,4 +1,5 @@
 #include <fat.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sdcard/wiisd_io.h>
@@ -71,7 +72,7 @@ int intReturnValue;
     }
     return isMountedNandFs;
 }
-void unmountFatFs(char *strDevice) {
+void unmountFatDevice(char *strDevice) {
     if (!strcmp(strDevice,"sd")) {
         unmountSD();
     }
@@ -79,23 +80,23 @@ void unmountFatFs(char *strDevice) {
         unmountUSB();
     }
 }
-char *mountFatFs(unsigned int intFatDevicePriority) {
+char *mountFatDevice(unsigned char chFatDevicesPriority) {
 char *varout=NULL;
 unsigned char chDeviceId;
-    while (((chDeviceId=intFatDevicePriority%10)) && (!varout)) {
+    while ((chDeviceId=chFatDevicesPriority%10) && (!varout)) {
         switch (chDeviceId) {
-            case SD_STORAGE:
+            case SD_STORAGE_DEVICE:
                 if (mountSD()) {
-                    varout=strdup("sd");
+                    varout=getCloneString("sd");
                 }
                 break;
-            case USB_STORAGE:
+            case USB_STORAGE_DEVICE:
                 if (mountUSB()) {
-                    varout=strdup("usb");
+                    varout=getCloneString("usb");
                 }
                 break;
         }
-        intFatDevicePriority=intFatDevicePriority/10;
+        chFatDevicesPriority=chFatDevicesPriority/10;
     }
-    return (varout)?varout:strdup("");
+    return (varout)?varout:getCloneString("");
 }

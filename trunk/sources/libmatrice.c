@@ -4,11 +4,11 @@
 #include "debug.h"
 void *getVector(size_t intItemsCount,size_t intItemSize,void *varDefautValue) {
 void *pVector;
-size_t i;
     pVector=malloc(intItemsCount*intItemSize);
     if (pVector!=NULL) {
-        for (i=0;i<intItemsCount;i++) {
-            memcpy(pVector+i*intItemSize,varDefautValue,intItemSize);
+        while (intItemsCount) {
+            intItemsCount--;
+            memcpy(pVector+intItemsCount*intItemSize,varDefautValue,intItemSize);
 		}
 	}
     return pVector;

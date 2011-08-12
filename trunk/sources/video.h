@@ -11,7 +11,8 @@ enum CONSOLE_FONT_COLORS {
 	CONSOLE_FONT_BLUE=4,
 	CONSOLE_FONT_MAGENTA=5,
 	CONSOLE_FONT_CYAN=6,
-	CONSOLE_FONT_WHITE=7
+	CONSOLE_FONT_WHITE=7,
+	CONSOLE_FONT_CURRENT_COLOR=8
 };
 enum CONSOLE_COLORS {
     CONSOLE_BLACK=COLOR_BLACK,
@@ -37,7 +38,8 @@ enum CONSOLE_COLORS {
 };
 enum CONSOLE_FONT_WEIGHTS {
     CONSOLE_FONT_NORMAL=0,
-    CONSOLE_FONT_BOLD=1
+    CONSOLE_FONT_BOLD=1,
+    CONSOLE_FONT_CURRENT_WEIGHT=2
 };
 struct stConsoleCursorLocation {
     int intColumn;
@@ -61,4 +63,9 @@ int getConsoleColumnsCount();
 int getConsoleRowsCount();
 int getConsoleColumn();
 int getConsoleRow();
+enum CONSOLE_FONT_COLORS getSavedBgColor();
+enum CONSOLE_FONT_COLORS getSavedFgColor();
+enum CONSOLE_FONT_WEIGHTS getSavedFontWeight();
+u8 getSavedConsoleRow();
+u8 getSavedConsoleColumn();
 #endif

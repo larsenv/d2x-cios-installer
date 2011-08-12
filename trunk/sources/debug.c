@@ -19,4 +19,5 @@ va_list pArguments;
             printf("%s",strDebugMsg);
     }
     resetPreviousFontStyle();
+
 }

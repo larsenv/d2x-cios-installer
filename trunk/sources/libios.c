@@ -3,12 +3,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <malloc.h>
-#include <gctypes.h>
 #include "libstring.h"
+#include "libarray.h"
+#include <gctypes.h>
 #include "DIPP21_elf.h"
 #include "DIPP21005_elf.h"
 #include "DIPP21006_elf.h"
-#include "EHCI21003_elf.h"
 #include "EHCI21004_elf.h"
 #include "EHCI21005_elf.h"
 #include "EHCI21006_elf.h"
@@ -16,11 +16,9 @@
 #include "ES21004_elf.h"
 #include "ES21005_elf.h"
 #include "ES21006_elf.h"
-#include "FAT21003_elf.h"
 #include "FAT21004_elf.h"
 #include "FAT21005_elf.h"
 #include "FAT21006_elf.h"
-#include "FFSP21003_elf.h"
 #include "FFSP21004_elf.h"
 #include "FFSP21005_elf.h"
 #include "FFSP21006_elf.h"
@@ -42,18 +40,7 @@
 #endif
 #define MEM_REG_BASE 0xd8b4000
 #define MEM_PROT (MEM_REG_BASE + 0x20a)
-static const u8 chDiReadlimitOriginalBytes[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x40,0x00,0x00,0x00,0x00,0x00,0x46,0x0A,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x08,0x00,0x00,0x00,0x00,0x7E,0xD4,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x08};
-static const u8 chDiReadlimitNewBytes[]={0x7e,0xd4};
-static const u8 chIsfsPermissionsOriginalBytes[]={0x42,0x8B,0xD0,0x01,0x25,0x66};
-static const u8 chIsfsPermissionsNewBytes[]={0x42,0x8B,0xE0,0x01,0x25,0x66};
-static const u8 chEsSetuidOriginalBytes[]={0xD1,0x2A,0x1C,0x39};
-static const u8 chEsSetuidNewBytes[]={0x46,0xC0};
-static const u8 chEsIdentifyOriginalBytes[]={0x28,0x03,0xD1,0x23};
-static const u8 chEsIdentifyNewBytes[]={0x00,0x00};
-static const u8 chOldTruchaOriginalBytes[]={0x20,0x07,0x23,0xA2};
-static const u8 chTruchaNewBytes[]={0x00};
-static const u8 chNewTruchaOriginalBytes[]={0x20,0x07,0x4B,0x0B};
-static unsigned short int intStubsMap[256]={-1,-1,-1,-1,65280,-1,-1,-1,-1,-1,768,256,-1,-1,-1,-1,512,-1,-1,-1,256,-1,-1,-1,-1,-1,-1,-1,-1,-1,2816,-1,-1,-1,-1,-1,-1,-1,-1,-1,3072,-1,-1,-1,-1,-1,-1,-1,-1,-1,5120,4864,5888,-1,-1,-1,-1,-1,-1,-1,6400,-1,-1,-1,-1,-1,-1,-1,-1,-1,6912,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,65280,65280,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,65280,65280,-1,-1,-1,65280,-1};
+static unsigned short int intStubsMap[256]={0,0,0,0,65280,0,0,0,0,0,768,256,0,0,0,0,512,0,0,0,256,0,0,0,0,0,0,0,0,0,2816,0,0,0,0,0,0,0,0,0,3072,0,0,0,0,0,0,0,0,0,5120,4864,5888,0,0,0,0,0,0,0,6400,0,0,0,0,0,0,0,0,0,6912,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,65280,65280,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,65280,65280,0,0,0,65280,0};
 unsigned short int intExternalCiosModulesCount=0;
 struct stExternalCiosModule *stExternalCiosModules=NULL;
 u8 *getExternalCiosModule(const char *strModuleName,char *strCiosContentsFolder,u32 **intModuleSize) {
@@ -71,7 +58,7 @@ int i;
         if (varout==NULL) {
             stExternalCiosModules=(struct stExternalCiosModule *) realloc(stExternalCiosModules,(intExternalCiosModulesCount+1)*sizeof(struct stExternalCiosModule));
             snprintf(strCacheModuleFileName,sizeof(strCacheModuleFileName),"%s/%s.app",strCiosContentsFolder,strModuleName);
-            stExternalCiosModules[intExternalCiosModulesCount].strModuleName=strdup(strModuleName);
+            stExternalCiosModules[intExternalCiosModulesCount].strModuleName=getCloneString(strModuleName);
             if ((stExternalCiosModules[intExternalCiosModulesCount].intModuleSize=(u32 *) malloc(sizeof(u32)))!=NULL) {
                 stExternalCiosModules[intExternalCiosModulesCount].chModuleContent=getFileContent(strlwr(strCacheModuleFileName),stExternalCiosModules[intExternalCiosModulesCount].intModuleSize);
                 varout=stExternalCiosModules[intExternalCiosModulesCount].chModuleContent;
@@ -85,6 +72,7 @@ int i;
 void freeExternalCiosModules() {
     if (intExternalCiosModulesCount) {
         free(stExternalCiosModules);
+        stExternalCiosModules=NULL;
     }
 }
 u8 *getCiosModule(const char *strModuleName,char *strCiosContentsFolder,u32 **intModuleSize) {
@@ -100,10 +88,6 @@ u8 *varout=NULL;
     else if (!strcmp(strModuleName,"DIPP21006")) {
         varout=(u8 *) &DIPP21006_elf[0];
         *intModuleSize=(u32 *) &DIPP21006_elf_size;
-    }
-    else if (!strcmp(strModuleName,"EHCI21003")) {
-        varout=(u8 *) &EHCI21003_elf[0];
-        *intModuleSize=(u32 *) &EHCI21003_elf_size;
     }
     else if (!strcmp(strModuleName,"EHCI21004")) {
         varout=(u8 *) &EHCI21004_elf[0];
@@ -133,10 +117,6 @@ u8 *varout=NULL;
         varout=(u8 *) &ES21006_elf[0];
         *intModuleSize=(u32 *) &ES21006_elf_size;
     }
-    else if (!strcmp(strModuleName,"FAT21003")) {
-        varout=(u8 *) &FAT21003_elf[0];
-        *intModuleSize=(u32 *) &FAT21003_elf_size;
-    }
     else if (!strcmp(strModuleName,"FAT21004")) {
         varout=(u8 *) &FAT21004_elf[0];
         *intModuleSize=(u32 *) &FAT21004_elf_size;
@@ -148,10 +128,6 @@ u8 *varout=NULL;
     else if (!strcmp(strModuleName,"FAT21006")) {
         varout=(u8 *) &FAT21006_elf[0];
         *intModuleSize=(u32 *) &FAT21006_elf_size;
-    }
-    else if (!strcmp(strModuleName,"FFSP21003")) {
-        varout=(u8 *) &FFSP21003_elf[0];
-        *intModuleSize=(u32 *) &FFSP21003_elf_size;
     }
     else if (!strcmp(strModuleName,"FFSP21004")) {
         varout=(u8 *) &FFSP21004_elf[0];
@@ -185,7 +161,7 @@ u8 *varout=NULL;
 struct stCiosGroup *getCiosMaps(const char *strXmlCiosMap,const char *strHomebrewAppFolder,unsigned int *intCiosCount) {
 struct stCiosGroup *stCiosMaps=NULL;
 char *chStopCharConversion,**strContentPatchOriginalBytesValues,**strContentPatchNewBytesValues,**strCiosContentsSubFolders,*strModuleName,*strContentPatchsCount,strCiosContentsFolder[256];
-unsigned int intXmlCiosCount,intContentPatchSize,i;
+unsigned int intXmlCiosCount,intContentPatchSize;
 u8 chXmlGroupCiosCount;
 u16 intXmlCiosContentsCount,intXmlCiosModulesCount;
 u32 intXmlContentPatchsCount;
@@ -215,7 +191,7 @@ u32 intXmlContentPatchsCount;
                         }
                         else {
                             stCiosMaps[*intCiosCount].intCiosRevision=atoi(mxmlElementGetAttr(pXmlCiosGroup,"version"));
-                            stCiosMaps[*intCiosCount].strGroupName=strdup(mxmlElementGetAttr(pXmlCiosGroup,"name"));
+                            stCiosMaps[*intCiosCount].strGroupName=getCloneString(mxmlElementGetAttr(pXmlCiosGroup,"name"));
                             stCiosMaps[*intCiosCount].chCiosCount=0;
                             for (pXmlCiosBase=mxmlFindElement(pXmlCiosGroup,pXmlCiosGroup,"base",NULL,NULL,MXML_DESCEND_FIRST);pXmlCiosBase!=NULL;pXmlCiosBase=mxmlFindElement(pXmlCiosBase,pXmlCiosGroup,"base",NULL,NULL,MXML_NO_DESCEND)) {
                                 if (stCiosMaps[*intCiosCount].chCiosCount<chXmlGroupCiosCount) {
@@ -273,12 +249,15 @@ u32 intXmlContentPatchsCount;
                                                                     else {
                                                                         stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].stPatchs[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intPatchsCount].chOriginalBytesValues=getUnsignedCharsVector(intContentPatchSize,0);
                                                                         stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].stPatchs[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intPatchsCount].chNewBytesValues=getUnsignedCharsVector(intContentPatchSize,0);
-                                                                        for (i=0;i<intContentPatchSize;i++) {
-                                                                            stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].stPatchs[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intPatchsCount].chOriginalBytesValues[i]=strtoul(strContentPatchOriginalBytesValues[i],&chStopCharConversion,16);
-                                                                            stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].stPatchs[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intPatchsCount].chNewBytesValues[i]=strtoul(strContentPatchNewBytesValues[i],&chStopCharConversion,16);
+                                                                        while (intContentPatchSize) {
+                                                                            intContentPatchSize--;
+                                                                            stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].stPatchs[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intPatchsCount].chOriginalBytesValues[intContentPatchSize]=strtoul(strContentPatchOriginalBytesValues[intContentPatchSize],&chStopCharConversion,16);
+                                                                            stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].stPatchs[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intPatchsCount].chNewBytesValues[intContentPatchSize]=strtoul(strContentPatchNewBytesValues[intContentPatchSize],&chStopCharConversion,16);
                                                                         }
                                                                         free(strContentPatchOriginalBytesValues);
                                                                         free(strContentPatchNewBytesValues);
+                                                                        strContentPatchOriginalBytesValues=NULL;
+                                                                        strContentPatchNewBytesValues=NULL;
                                                                         stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stContents[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intContentsCount].intPatchsCount++;
                                                                     }
                                                                 }
@@ -293,13 +272,16 @@ u32 intXmlContentPatchsCount;
                                                     if ((strModuleName=(char *) mxmlElementGetAttr(pXmlCiosContent,"module"))!=NULL) {
                                                         if (stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intModulesCount<intXmlCiosModulesCount) {
                                                             stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stCiosModules[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intModulesCount].intTmdModuleId=atoi(mxmlElementGetAttr(pXmlCiosContent,"tmdmoduleid"));
-                                                            strcpy(strCiosContentsFolder,strHomebrewAppFolder);
-                                                            if (*strCiosContentsFolder) {
+                                                            strCiosContentsFolder[0]=0;
+                                                            if (*strHomebrewAppFolder) {
                                                                 strCiosContentsSubFolders=getSplitStrings(stCiosMaps[*intCiosCount].strGroupName," ",&intContentPatchSize);
-                                                                for (i=0;i<intContentPatchSize;i++) {
-                                                                    snprintf(strCiosContentsFolder,sizeof(strCiosContentsFolder),"%s/%s",strCiosContentsFolder,strCiosContentsSubFolders[i]);
+                                                                while (intContentPatchSize) {
+                                                                    intContentPatchSize--;
+                                                                    snprintf(strCiosContentsFolder,sizeof(strCiosContentsFolder),"%s/%s",strCiosContentsSubFolders[intContentPatchSize],strCiosContentsFolder);
                                                                 }
                                                                 free(strCiosContentsSubFolders);
+                                                                strCiosContentsSubFolders=NULL;
+                                                                snprintf(strCiosContentsFolder,sizeof(strCiosContentsFolder),"%s/%s",strHomebrewAppFolder,strCiosContentsFolder);
                                                             }
                                                             if ((stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stCiosModules[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intModulesCount].chModuleContent=getCiosModule(strModuleName,strCiosContentsFolder,&stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stCiosModules[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intModulesCount].intModuleSize))==NULL) {
                                                                 printDebugMsg(ERROR_DEBUG_MESSAGE,"\nUnable to get the module %s for the %s cIOS base %d",strModuleName,stCiosMaps[*intCiosCount].strGroupName,stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stBase.chBase);
@@ -390,17 +372,11 @@ u8 *chModuleContent=memalign(32,intContentSize);
     return writeNandFile(strNandContentFileName,chModuleContent,intContentSize);
 #endif
 }
-u8 getRuntimeIos() {
-    return *((volatile u32 *) 0x80003140)>>16;
-}
-u16 getRuntimeIosVersion() {
-    return *((volatile u32 *) 0x80003140) & 0xffff;
-}
-static u32 applyOnTheFlyIosPatchs(const char *strVerboseMessage,const u8 *chOriginalBytes,u32 chOriginalBytesCount,const u8 *chNewBytes,u32 chNewBytesCount,u32 intOffsetPatch) {
+static u32 applyOnTheFlyIosPatchs(const char *strVerboseMessage,u8 *pStartPatchScanAddress,u8 *pEndPatchScanAddress,const u8 *chOriginalBytes,u32 chOriginalBytesCount,const u8 *chNewBytes,u32 chNewBytesCount,u32 intOffsetPatch) {
 u32 varout=0,i,intMemoryRangeSize=(chNewBytesCount >> 5 << 5)+64;
-u8 *pStartPatchScanAddress=(u8 *) 0x93400000,*pPatchOffset=NULL,*pPatchOffsetMemoryRange=NULL;
+u8 *pPatchOffset=NULL,*pPatchOffsetMemoryRange=NULL;
     printf("%s",strVerboseMessage);
-    while ((u32) pStartPatchScanAddress<(0x94000000-chNewBytesCount)) {
+    while (pStartPatchScanAddress<(pEndPatchScanAddress-chNewBytesCount)) {
         if (!memcmp(pStartPatchScanAddress,chOriginalBytes,chOriginalBytesCount)) {
             varout++;
             pPatchOffset=pStartPatchScanAddress+intOffsetPatch;
@@ -424,47 +400,126 @@ u8 *pStartPatchScanAddress=(u8 *) 0x93400000,*pPatchOffset=NULL,*pPatchOffsetMem
     return varout;
 }
 u32 applyAhbProtPatchs(bool blnVerbose) {
+static const u8 chDiReadlimitOriginalBytes[]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x40,0x00,0x00,0x00,0x00,0x00,0x46,0x0A,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x08,0x00,0x00,0x00,0x00,0x7E,0xD4,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x08};
+static const u8 chDiReadlimitNewBytes[]={0x7e,0xd4};
+static const u8 chIsfsPermissionsOriginalBytes[]={0x42,0x8B,0xD0,0x01,0x25,0x66};
+static const u8 chIsfsPermissionsNewBytes[]={0x42,0x8B,0xE0,0x01,0x25,0x66};
+static const u8 chEsSetuidOriginalBytes[]={0xD1,0x2A,0x1C,0x39};
+static const u8 chEsSetuidNewBytes[]={0x46,0xC0};
+static const u8 chEsIdentifyOriginalBytes[]={0x28,0x03,0xD1,0x23};
+static const u8 chEsIdentifyNewBytes[]={0x00,0x00};
+static const u8 chOldTruchaOriginalBytes[]={0x20,0x07,0x23,0xA2};
+static const u8 chTruchaNewBytes[]={0x00};
+static const u8 chNewTruchaOriginalBytes[]={0x20,0x07,0x4B,0x0B};
+static const u8 chEsVersionOriginalBytes[] = {0xD2,0x01,0x4E,0x56};
+static const u8 chEsVersionNewBytes[] = {0xE0};
 u32 varout=0;
     if (HAVE_AHBPROT) {
         write32(MEM_PROT,read32(MEM_PROT) & 0x0000FFFF);
-        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"di_readlimit..":"",chDiReadlimitOriginalBytes,sizeof(chDiReadlimitOriginalBytes),chDiReadlimitNewBytes,sizeof(chDiReadlimitNewBytes),12);
-        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"isfs_permissions..":"",chIsfsPermissionsOriginalBytes,sizeof(chIsfsPermissionsOriginalBytes),chIsfsPermissionsNewBytes,sizeof(chIsfsPermissionsNewBytes),0);
-        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"es_setuid":"",chEsSetuidOriginalBytes,sizeof(chEsSetuidOriginalBytes),chEsSetuidNewBytes,sizeof(chEsSetuidNewBytes),0);
-        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"es_identify":"",chEsIdentifyOriginalBytes,sizeof(chEsIdentifyOriginalBytes),chEsIdentifyNewBytes,sizeof(chEsIdentifyNewBytes),2);
-        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"hash_check":"",chOldTruchaOriginalBytes,sizeof(chOldTruchaOriginalBytes),chTruchaNewBytes,sizeof(chTruchaNewBytes),1);
-        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"new_hash_check":"",chNewTruchaOriginalBytes,sizeof(chNewTruchaOriginalBytes),chTruchaNewBytes,sizeof(chTruchaNewBytes),1);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"di_readlimit..":"",(u8*)0x93400000,(u8*)0x94000000,chDiReadlimitOriginalBytes,sizeof(chDiReadlimitOriginalBytes),chDiReadlimitNewBytes,sizeof(chDiReadlimitNewBytes),12);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"isfs_permissions..":"",(u8*)0x93400000,(u8*)0x94000000,chIsfsPermissionsOriginalBytes,sizeof(chIsfsPermissionsOriginalBytes),chIsfsPermissionsNewBytes,sizeof(chIsfsPermissionsNewBytes),0);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"es_setuid":"",(u8*)0x93400000,(u8*)0x94000000,chEsSetuidOriginalBytes,sizeof(chEsSetuidOriginalBytes),chEsSetuidNewBytes,sizeof(chEsSetuidNewBytes),0);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"es_identify":"",(u8*)0x93400000,(u8*)0x94000000,chEsIdentifyOriginalBytes,sizeof(chEsIdentifyOriginalBytes),chEsIdentifyNewBytes,sizeof(chEsIdentifyNewBytes),2);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"hash_check":"",(u8*)0x93400000,(u8*)0x94000000,chOldTruchaOriginalBytes,sizeof(chOldTruchaOriginalBytes),chTruchaNewBytes,sizeof(chTruchaNewBytes),1);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"new_hash_check":"",(u8*)0x93400000,(u8*)0x94000000,chNewTruchaOriginalBytes,sizeof(chNewTruchaOriginalBytes),chTruchaNewBytes,sizeof(chTruchaNewBytes),1);
+        varout=varout+applyOnTheFlyIosPatchs(blnVerbose?"es_version":"",(u8*)0x93400000,(u8*)0x94000000,chEsVersionOriginalBytes,sizeof(chEsVersionOriginalBytes),chEsVersionNewBytes,sizeof(chEsVersionNewBytes),0);
     }
     return varout;
 }
-u8 getSlotsMap(u8 *intSlotsMap) {
-u8 varout=0;
+u32 setAhbProtAccessRights(bool blnVerbose) {
+static const u8 chAhbprotOriginalBytes[]={0x68,0x5B,0x22,0xEC,0x00,0x52,0x18,0x9B,0x68,0x1B,0x46,0x98,0x07,0xDB};
+static const u8 chAhbprotNewBytes[]={0x01};
+u32 varout=0;
+    if (HAVE_AHBPROT) {
+        write32(MEM_PROT,read32(MEM_PROT) & 0x0000FFFF);
+        varout=applyOnTheFlyIosPatchs(blnVerbose?"es_set_ahbprot..":"",(u8*)*((u32*)0x80003134),(u8*)0x94000000,chAhbprotOriginalBytes,sizeof(chAhbprotOriginalBytes),chAhbprotNewBytes,sizeof(chAhbprotNewBytes),25);
+    }
+    return varout;
+}
+struct stSlotInfos *getSlotsMap() {
+u8 chIosCount=0;
+struct stSlotInfos *varout=NULL;
 u64 *intTitles;
-signed_blob *sTmd;
-u32 intTitlesCount,intMajorTitleId,intMinorTitleId,intTmdSize;
-tmd *pTmd;
-    memset((void *) intSlotsMap,0,256);
-    intTitles=getTitles(&intTitlesCount);
-    if (intTitles!=NULL) {
-        while (varout<intTitlesCount) {
-            intMajorTitleId =(intTitles[varout] >> 32);
-            intMinorTitleId =(intTitles[varout] & 0xFFFFFFFF);
-            if ((intMajorTitleId!=0x1) || (intMinorTitleId<3) || (intMinorTitleId>255)) {
-                intTitlesCount--;
-                memcpy(&intTitles[varout],&intTitles[varout+1],(intTitlesCount-varout)*sizeof(u64));
-            }
-            else {
-                intSlotsMap[intMinorTitleId]=ACTIVE_IOS;
-                if ((sTmd=getStoredTmd(intTitles[varout],&intTmdSize))!=NULL) {
-                    pTmd=(tmd *) SIGNATURE_PAYLOAD(sTmd);
-                    if (isInRange(pTmd->title_version,intStubsMap[intMinorTitleId],65535,true,false)) {
-                        intSlotsMap[intMinorTitleId]=STUB_IOS;
-                    }
-                    free(sTmd);
+u32 intTitlesCount,intMinorTitleId;
+size_t intMemorySize=256*sizeof(struct stSlotInfos);
+    if ((varout=(struct stSlotInfos *) malloc(intMemorySize))!=NULL) {
+        memset(varout,0,intMemorySize);
+        intTitles=getTitles(&intTitlesCount);
+        if (intTitles==NULL) {
+            free(varout);
+            varout=NULL;
+        }
+        else {
+            while (chIosCount<intTitlesCount) {
+                intMinorTitleId=getMinorTitleId(intTitles[chIosCount]);
+                if ((getMajorTitleId(intTitles[chIosCount])!=0x1) || (intMinorTitleId<3) || (intMinorTitleId>255)) {
+                    intTitlesCount--;
+                    memcpy(&intTitles[chIosCount],&intTitles[chIosCount+1],(intTitlesCount-chIosCount)*sizeof(u64));
                 }
-                varout++;
+                else {
+                    varout[intMinorTitleId].intIosRevision=getStoredTitleVersion(intTitles[chIosCount]);
+                    if (varout[intMinorTitleId].intIosRevision==intStubsMap[intMinorTitleId]) {
+                        varout[intMinorTitleId].chIosType=STUB_IOS;
+                    }
+                    else {
+                        varout[intMinorTitleId].chIosType=ACTIVE_IOS;
+                    }
+                    chIosCount++;
+                }
+            }
+            free(intTitles);
+            intTitles=NULL;
+        }
+        varout[242].chIosType=(varout[242].chIosType>STUB_IOS)?RESERVED_IOS:varout[242].chIosType;
+        varout[254].chIosType=(varout[254].chIosType>STUB_IOS)?BOOTMII_IOS:varout[254].chIosType;
+	}
+    return varout;
+}
+unsigned char getCiosAlternativeRevisions(u16 *intCiosAlternativeRevisions,u16 intOfficialRevision) {
+unsigned char varout=0;
+    intCiosAlternativeRevisions[0]=intOfficialRevision;
+    if (intOfficialRevision!=65535) {
+        if (intOfficialRevision>999) {
+            varout++;
+            intCiosAlternativeRevisions[varout]=intOfficialRevision/1000;
+        }
+        varout++;
+    }
+    intCiosAlternativeRevisions[varout]=65535;
+    return varout+1;
+}
+enum CONSOLE_FONT_COLORS getIosTypeColor(enum IOS_TYPES IOS_TYPE) {
+enum CONSOLE_FONT_COLORS varout;
+    switch (IOS_TYPE) {
+        case NONE_IOS:
+            varout=CONSOLE_FONT_BLACK;
+            break;
+        case STUB_IOS:
+            varout=CONSOLE_FONT_MAGENTA;
+            break;
+        default:
+            varout=CONSOLE_FONT_RED;
+    }
+    return varout;
+}
+struct stCiosMap *getCiosMap(const char *strCiosName,u8 chCiosBase,u16 intCiosRevision,struct stCiosGroup *stCiosMaps,unsigned int intCiosCount,char **strCiosGroupName) {
+struct stCiosMap *varout=NULL;
+unsigned char j;
+u16 intCiosAlternativeRevisions[3];
+    while (intCiosCount) {
+        intCiosCount--;
+        if (!strcmp(stCiosMaps[intCiosCount].strGroupName,strCiosName)) {
+            for (j=0;j<stCiosMaps[intCiosCount].chCiosCount;j++) {
+                if (stCiosMaps[intCiosCount].stCios[j].stBase.chBase==chCiosBase) {
+                    if (inArray((void *) intCiosAlternativeRevisions,getCiosAlternativeRevisions(intCiosAlternativeRevisions,stCiosMaps[intCiosCount].intCiosRevision),sizeof(u16),(void *) &intCiosRevision)) {
+                        *strCiosGroupName=stCiosMaps[intCiosCount].strGroupName;
+                        varout=&stCiosMaps[intCiosCount].stCios[j];
+                        j=stCiosMaps[intCiosCount].chCiosCount;
+                        intCiosCount=0;
+                    }
+                }
             }
         }
-        free(intTitles);
-	}
+    }
     return varout;
 }

@@ -4,6 +4,7 @@
 #include "libmatrice.h"
 #include "libfile.h"
 #include "libmath.h"
+#include "libstring.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/dirent.h>
@@ -28,12 +29,14 @@ size_t intReadBytesCount1,intReadBytesCount2;
                                         varout=abs(intReadBytesCount2-intReadBytesCount1);
                                     }
                                     free(chDataBytes2);
+                                    chDataBytes2=NULL;
                                 }
                             }
                         }
                         fclose(fh2);
                     }
                     free(chDataBytes1);
+                    chDataBytes1=NULL;
                 }
             }
         }
@@ -74,7 +77,7 @@ char *varout;
 char *chDeviceLastCharOffset;
 size_t intDeviceNameSize;
     if ((chDeviceLastCharOffset=strchr(strFileName,':'))==NULL) {
-        varout=strdup("");
+        varout=getCloneString("");
     }
     else {
         intDeviceNameSize=chDeviceLastCharOffset-strFileName;
@@ -88,7 +91,7 @@ char *varout;
 char *chLastSlashOffset;
 size_t intDirNameSize;
     if ((chLastSlashOffset=strrchr(strFileName,'/'))==NULL) {
-        varout=strdup("");
+        varout=getCloneString("");
     }
     else {
         intDirNameSize=chLastSlashOffset-strFileName;
