@@ -59,7 +59,7 @@ struct stSlotInfos {
     u8 chIosType;
 };
 void freeExternalCiosModules();
-u8 *getCiosModule(const char *strModuleName,char *strCiosContentsFolder,u32 **intModuleSize);
+u8 *getCiosModule(const char *strModuleName,const char *strHomebrewAppFolder,const char *strCiosGroupName,u32 **intModuleSize);
 struct stCiosGroup *getCiosMaps(const char *strXmlCiosMap,const char *strHomebrewAppFolder,unsigned int *intCiosCount);
 s32 addModule(tmd *pTmd,struct stModule *stCiosModule,u32 intContentId,const char *strNandContentFileName);
 u32 applyAhbProtPatchs(bool blnVerbose);

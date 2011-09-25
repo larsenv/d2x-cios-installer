@@ -37,11 +37,13 @@ u32 http_status;
     if (!intNotInitNetwork) {
         while ((chRetry) && (!http_request(strFileUrl, (u32) (1 << 31)))) {
             chRetry--;
-            printDebugMsg(ERROR_DEBUG_MESSAGE,"\nError making http request");
             sleep(1);
         }
         if (chRetry) {
             http_get_result(&http_status,(u8 **) &varout,intDownloadBytesCount);
+        }
+        else {
+            printDebugMsg(ERROR_DEBUG_MESSAGE,"\nError making http request");
         }
     }
     return varout;

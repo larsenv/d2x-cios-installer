@@ -35,12 +35,12 @@
 #include "sha1.h"
 #include "title.h"
 #include "libfile.h"
+#include "stubs.h"
 #if TESTING_CODE == 0
 #include "nand.h"
 #endif
 #define MEM_REG_BASE 0xd8b4000
 #define MEM_PROT (MEM_REG_BASE + 0x20a)
-static unsigned short int intStubsMap[256]={0,0,0,0,65280,0,0,0,0,0,768,256,0,0,0,0,512,0,0,0,256,0,0,0,0,0,0,0,0,0,2816,0,0,0,0,0,0,0,0,0,3072,0,0,0,0,0,0,0,0,0,5120,4864,5888,0,0,0,0,0,0,0,6400,0,0,0,0,0,0,0,0,0,6912,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,65280,65280,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,65280,65280,0,0,0,65280,0};
 unsigned short int intExternalCiosModulesCount=0;
 struct stExternalCiosModule *stExternalCiosModules=NULL;
 u8 *getExternalCiosModule(const char *strModuleName,char *strCiosContentsFolder,u32 **intModuleSize) {
@@ -57,7 +57,7 @@ int i;
         }
         if (varout==NULL) {
             stExternalCiosModules=(struct stExternalCiosModule *) realloc(stExternalCiosModules,(intExternalCiosModulesCount+1)*sizeof(struct stExternalCiosModule));
-            snprintf(strCacheModuleFileName,sizeof(strCacheModuleFileName),"%s/%s.app",strCiosContentsFolder,strModuleName);
+            snprintf(strCacheModuleFileName,sizeof(strCacheModuleFileName),"%s%s.app",strCiosContentsFolder,strModuleName);
             stExternalCiosModules[intExternalCiosModulesCount].strModuleName=getCloneString(strModuleName);
             if ((stExternalCiosModules[intExternalCiosModulesCount].intModuleSize=(u32 *) malloc(sizeof(u32)))!=NULL) {
                 stExternalCiosModules[intExternalCiosModulesCount].chModuleContent=getFileContent(strlwr(strCacheModuleFileName),stExternalCiosModules[intExternalCiosModulesCount].intModuleSize);
@@ -75,8 +75,12 @@ void freeExternalCiosModules() {
         stExternalCiosModules=NULL;
     }
 }
-u8 *getCiosModule(const char *strModuleName,char *strCiosContentsFolder,u32 **intModuleSize) {
+u8 *getCiosModule(const char *strModuleName,const char *strHomebrewAppFolder,const char *strCiosGroupName,u32 **intModuleSize) {
 u8 *varout=NULL;
+static char strCiosContentsFolder[256];
+unsigned int intCiosContentsSubFoldersCount;
+char **strCiosContentsSubFolders;
+size_t intFolderNameLength;
     if (!strcmp(strModuleName,"DIPP21")) {
         varout=(u8 *) &DIPP21_elf[0];
         *intModuleSize=(u32 *) &DIPP21_elf_size;
@@ -154,13 +158,29 @@ u8 *varout=NULL;
         *intModuleSize=(u32 *) &USBS21_elf_size;
     }
     if (varout==NULL) {
-        varout=getExternalCiosModule(strModuleName,strCiosContentsFolder,intModuleSize);
+        strCiosContentsFolder[0]=0;
+        if (*strHomebrewAppFolder) {
+            intCiosContentsSubFoldersCount=5;
+            strCiosContentsSubFolders=getSplitStrings(strCiosGroupName," ",&intCiosContentsSubFoldersCount);
+            while (intCiosContentsSubFoldersCount) {
+                intCiosContentsSubFoldersCount--;
+                intFolderNameLength=strlen(strCiosContentsSubFolders[intCiosContentsSubFoldersCount]);
+                strCiosContentsSubFolders[intCiosContentsSubFoldersCount][intFolderNameLength]='/';
+                insertInArray(strCiosContentsFolder,sizeof(strCiosContentsFolder),1,strCiosContentsSubFolders[intCiosContentsSubFoldersCount],intFolderNameLength+1,0);
+            }
+            free(strCiosContentsSubFolders);
+            strCiosContentsSubFolders=NULL;
+            intFolderNameLength=strlen(strHomebrewAppFolder);
+            insertInArray(strCiosContentsFolder,sizeof(strCiosContentsFolder),1,(void *) strHomebrewAppFolder,intFolderNameLength+1,0);
+            strCiosContentsFolder[intFolderNameLength]='/';
+            varout=getExternalCiosModule(strModuleName,strCiosContentsFolder,intModuleSize);
+        }
     }
     return varout;
 }
 struct stCiosGroup *getCiosMaps(const char *strXmlCiosMap,const char *strHomebrewAppFolder,unsigned int *intCiosCount) {
 struct stCiosGroup *stCiosMaps=NULL;
-char *chStopCharConversion,**strContentPatchOriginalBytesValues,**strContentPatchNewBytesValues,**strCiosContentsSubFolders,*strModuleName,*strContentPatchsCount,strCiosContentsFolder[256];
+char *chStopCharConversion,**strContentPatchOriginalBytesValues,**strContentPatchNewBytesValues,*strModuleName,*strContentPatchsCount;
 unsigned int intXmlCiosCount,intContentPatchSize;
 u8 chXmlGroupCiosCount;
 u16 intXmlCiosContentsCount,intXmlCiosModulesCount;
@@ -272,18 +292,7 @@ u32 intXmlContentPatchsCount;
                                                     if ((strModuleName=(char *) mxmlElementGetAttr(pXmlCiosContent,"module"))!=NULL) {
                                                         if (stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intModulesCount<intXmlCiosModulesCount) {
                                                             stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stCiosModules[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intModulesCount].intTmdModuleId=atoi(mxmlElementGetAttr(pXmlCiosContent,"tmdmoduleid"));
-                                                            strCiosContentsFolder[0]=0;
-                                                            if (*strHomebrewAppFolder) {
-                                                                strCiosContentsSubFolders=getSplitStrings(stCiosMaps[*intCiosCount].strGroupName," ",&intContentPatchSize);
-                                                                while (intContentPatchSize) {
-                                                                    intContentPatchSize--;
-                                                                    snprintf(strCiosContentsFolder,sizeof(strCiosContentsFolder),"%s/%s",strCiosContentsSubFolders[intContentPatchSize],strCiosContentsFolder);
-                                                                }
-                                                                free(strCiosContentsSubFolders);
-                                                                strCiosContentsSubFolders=NULL;
-                                                                snprintf(strCiosContentsFolder,sizeof(strCiosContentsFolder),"%s/%s",strHomebrewAppFolder,strCiosContentsFolder);
-                                                            }
-                                                            if ((stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stCiosModules[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intModulesCount].chModuleContent=getCiosModule(strModuleName,strCiosContentsFolder,&stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stCiosModules[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intModulesCount].intModuleSize))==NULL) {
+                                                            if ((stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stCiosModules[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intModulesCount].chModuleContent=getCiosModule(strModuleName,strHomebrewAppFolder,stCiosMaps[*intCiosCount].strGroupName,&stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stCiosModules[stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].intModulesCount].intModuleSize))==NULL) {
                                                                 printDebugMsg(ERROR_DEBUG_MESSAGE,"\nUnable to get the module %s for the %s cIOS base %d",strModuleName,stCiosMaps[*intCiosCount].strGroupName,stCiosMaps[*intCiosCount].stCios[stCiosMaps[*intCiosCount].chCiosCount].stBase.chBase);
                                                                 exit(2);
                                                             }

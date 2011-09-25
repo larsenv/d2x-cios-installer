@@ -75,28 +75,22 @@ char *varout;
 char *getDeviceFileName(const char *strFileName) {
 char *varout;
 char *chDeviceLastCharOffset;
-size_t intDeviceNameSize;
     if ((chDeviceLastCharOffset=strchr(strFileName,':'))==NULL) {
         varout=getCloneString("");
     }
     else {
-        intDeviceNameSize=chDeviceLastCharOffset-strFileName;
-        varout=getCharsVector(intDeviceNameSize+1,0);
-        strncpy(varout,strFileName,intDeviceNameSize);
+        varout=getSubString(strFileName,0,chDeviceLastCharOffset-strFileName);
     }
     return varout;
 }
 char *getDirName(const char *strFileName) {
 char *varout;
 char *chLastSlashOffset;
-size_t intDirNameSize;
     if ((chLastSlashOffset=strrchr(strFileName,'/'))==NULL) {
         varout=getCloneString("");
     }
     else {
-        intDirNameSize=chLastSlashOffset-strFileName;
-        varout=getCharsVector(intDirNameSize+1,0);
-        strncpy(varout,strFileName,intDirNameSize);
+        varout=getSubString(strFileName,0,chLastSlashOffset-strFileName);
     }
     return varout;
 }

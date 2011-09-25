@@ -105,3 +105,10 @@ unsigned int varout=0;
     }
     return varout;
 }
+char *getSubString(const char *strValue,unsigned int intOffset,size_t intLength) {
+char *varout=NULL;
+    intOffset=getMinValue(intOffset,strlen(strValue));
+    intLength=getMinValue(strlen(strValue)-intOffset,intLength);
+    varout=getCharsVector(intLength+1,0);
+    return strncpy(varout,&strValue[intOffset],intLength);
+}

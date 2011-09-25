@@ -8,4 +8,5 @@ char **getBreakStrings(const char *strValue,const char chBreakChar,size_t intMax
 unsigned int getLinesCount(const char *strValue,unsigned int *intMaxLineSize);
 bool isInStringArray(const char *strValue,const char **strArray,unsigned int intArraySize);
 unsigned int uniqueStringArray(char **strArray,unsigned int intArraySize);
+char *getSubString(const char *strValue,unsigned int intOffset,size_t intLength);
 #endif

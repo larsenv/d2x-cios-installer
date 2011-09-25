@@ -1,6 +1,7 @@
 #ifndef _NAND_H_
 #define _NAND_H_
 #include <gctypes.h>
+bool haveNandAccess();
 bool existNandFile(const char *strFileName);
 s32 deleteNandFile(const char *strFileName);
 s32 createNandFile(const char *strFileName);

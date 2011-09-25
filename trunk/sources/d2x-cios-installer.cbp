@@ -209,6 +209,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="sha1.h" />
+		<Unit filename="stubs.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="system.c">
 			<Option compilerVar="CC" />
 			<Option target="&lt;{~None~}&gt;" />
