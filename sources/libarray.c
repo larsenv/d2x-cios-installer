@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "libarray.h"
+#include "libmath.h"
 bool inArray(void *varArray,unsigned int intItemsCount,size_t intItemSize,void *varValue) {
 bool varout=false;
     while (intItemsCount) {
@@ -82,5 +83,17 @@ static char strFormattedText[1024];
         printf("%s",strFormattedText);
         varout=varout+strlen(strFormattedText);
 	}
+    return varout;
+}
+unsigned int insertInArray(void *varArray,unsigned int varArrayItemsCount,size_t intArrayItemSize,void *varInsertItems,unsigned int intInsertItemsCount,unsigned int intInsertPos) {
+unsigned int varout=0,intItemsCount;
+void *pInsertOffset;
+    if (intInsertPos<varArrayItemsCount) {
+        intItemsCount=varArrayItemsCount-intInsertPos;
+        varout=getMinValue(intInsertItemsCount,intItemsCount);
+        pInsertOffset=varArray+intInsertPos*intArrayItemSize;
+        memmove(pInsertOffset+varout*intArrayItemSize,pInsertOffset,(intItemsCount-varout)*intArrayItemSize);
+        memcpy(pInsertOffset,varInsertItems,varout*intArrayItemSize);
+    }
     return varout;
 }

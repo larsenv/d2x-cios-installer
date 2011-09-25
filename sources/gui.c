@@ -419,7 +419,7 @@ void drawLabel(u8 chRow,u8 chColumn,enum CONSOLE_FONT_COLORS FONT_BGCOLOR,enum C
     stLabelSettings->chLabelSize=chLabelSize;
     printf("%*s",(unsigned int) stLabelSettings->chLabelSize,"");
 }
-void printLabel(u8 chRow,u8 chColumn,enum CONSOLE_FONT_COLORS FONT_BGCOLOR,enum CONSOLE_FONT_COLORS FONT_FGCOLOR,enum CONSOLE_FONT_WEIGHTS FONT_WEIGHT,unsigned char chLabelSize,const char *strFormatLabel,...) {
+void printLabel(u8 chRow,u8 chColumn,enum CONSOLE_FONT_COLORS FONT_BGCOLOR,enum CONSOLE_FONT_COLORS FONT_FGCOLOR,enum CONSOLE_FONT_WEIGHTS FONT_WEIGHT,unsigned char chLabelSize,struct stConsoleCursorLocation *stConcatLabelLocation,const char *strFormatLabel,...) {
 static char strLabelText[256];
 va_list pArguments;
 unsigned char chLabelLength;
@@ -430,6 +430,7 @@ unsigned char chLabelLength;
     setCursorPosition(getTextBoxRow(chRow),getTextBoxColumn(chColumn));
     setFontStyle(FONT_BGCOLOR,FONT_FGCOLOR,FONT_WEIGHT);
     printf("%.*s",(unsigned int) chLabelSize,strLabelText);
+    CON_GetPosition(&stConcatLabelLocation->intColumn,&stConcatLabelLocation->intRow);
     resetPreviousFontStyle();
     chLabelLength=strlen(strLabelText);
     printf("%*s",(unsigned int) ((chLabelLength>chLabelSize)?0:chLabelSize-chLabelLength),"");
@@ -457,6 +458,7 @@ va_list pArguments;
 }
 void updateProgressBar(struct stProgressBar *stProgressBarSettings,enum CONSOLE_FONT_COLORS FONT_BGCOLOR,enum CONSOLE_FONT_COLORS FONT_FGCOLOR,enum CONSOLE_FONT_WEIGHTS FONT_WEIGHT,const char *strFormatProgressBarText,...) {
 static char strProgressBarText[256];
+struct stConsoleCursorLocation stTexteLocation;
 va_list pArguments;
     if (stProgressBarSettings->intValue<stProgressBarSettings->intOperationsCount) {
         saveCursorPosition();
@@ -469,7 +471,7 @@ va_list pArguments;
         va_start(pArguments,strFormatProgressBarText);
         vsnprintf(strProgressBarText,stProgressBarSettings->chProgressBarTextSize+1,strFormatProgressBarText,pArguments);
         va_end(pArguments);
-        printLabel(stProgressBarSettings->stProgressBarTextLocation.intRow,stProgressBarSettings->stProgressBarTextLocation.intColumn,FONT_BGCOLOR,FONT_FGCOLOR,FONT_WEIGHT,stProgressBarSettings->chProgressBarTextSize,"%s",strProgressBarText);
+        printLabel(stProgressBarSettings->stProgressBarTextLocation.intRow,stProgressBarSettings->stProgressBarTextLocation.intColumn,FONT_BGCOLOR,FONT_FGCOLOR,FONT_WEIGHT,stProgressBarSettings->chProgressBarTextSize,&stTexteLocation,"%s",strProgressBarText);
     }
 }
 void printLevelsBar(u8 chRow,u8 chColumn,enum CONSOLE_FONT_COLORS LEVELS_BAR_COLOR,enum CONSOLE_FONT_COLORS ACTIVE_LEVEL_COLOR,unsigned char chActiveLevelIndex,unsigned char chLevelsCount,struct stConsoleCursorLocation *stLevelBarLocation,const char *strFirstLevel,...) {
@@ -727,19 +729,15 @@ int intConsoleColumnsCount,intConsoleRowsCount;
     }
     resetSavedCursorPosition();
 }
-void setStatusBar(struct stCommandsBar *stCommandsBarSettings,const char *strFormatText,...) {
-unsigned char chColumnCounts;
+void setStatusBar(struct stCommandsBar *stCommandsBarSettings,enum CONSOLE_FONT_COLORS BGCOLOR,enum CONSOLE_FONT_COLORS FONT_COLOR,enum CONSOLE_FONT_WEIGHTS FONT_WEIGHT,const char *strFormatText,...) {
 va_list pArguments;
 static char strStatusText[256];
+struct stConsoleCursorLocation stConcatLabelLocation;
     if (stCommandsBarSettings->stStatusBarLocation.intRow!=-1) {
-        saveCursorPosition();
         va_start(pArguments,strFormatText);
         vsnprintf(strStatusText,sizeof(strStatusText),strFormatText,pArguments);
         va_end(pArguments);
-        chColumnCounts=getConsoleColumnsCount()-1;
-        setCursorPosition(stCommandsBarSettings->stStatusBarLocation.intRow,stCommandsBarSettings->stStatusBarLocation.intColumn);
-        printf("%-*.*s",(unsigned int) chColumnCounts,(unsigned int) chColumnCounts,strStatusText);
-        resetSavedCursorPosition();
+        printLabel(stCommandsBarSettings->stStatusBarLocation.intRow,stCommandsBarSettings->stStatusBarLocation.intColumn,BGCOLOR,FONT_COLOR,FONT_WEIGHT,getConsoleColumnsCount()-1,&stConcatLabelLocation,"%s",strStatusText);
     }
 }
 void addCommandsBarItem(struct stCommandsBar *stCommandsBarSettings,s32 *intMappedPadKeys,unsigned char chMappedPadKeysCount,const char *strFormatText,...) {

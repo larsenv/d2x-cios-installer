@@ -201,7 +201,7 @@ char *strHomebrewDeviceFileName=NULL;
 }
 void onExit() {
 	WPAD_Shutdown();
-	sleep(5);
+	sleep(1);
 }
 int main(int intArgumentsCount, char **strArguments) {
 char strCacheFolder[256]={0},*strMountedDevice,*strCiosMapsXmlFileContent,strCiosMapXmlFileName[256],*strHomebrewAppFolder;
@@ -211,7 +211,7 @@ unsigned int intCiosCount=0,intSelectedCios=0,intPreviousSelectedCios=0,intActiv
 s32 pressed=0,intExpectedPadsKeys[]={PAD_BUTTON_UP,PAD_BUTTON_DOWN,PAD_BUTTON_LEFT,PAD_BUTTON_RIGHT,PAD_BUTTON_A,PAD_BUTTON_B,PAD_BUTTON_START,PAD_BUTTON_Y,PAD_BUTTON_X,PAD_TRIGGER_L};
 int intConsoleColumnsCount,intReturnValue,varout=1;
 struct stCiosGroup *stCiosMaps,*stBetaCiosMaps=NULL;
-struct stLabel stLabelSettings[8];
+struct stLabel stLabelSettings[9];
 struct stTable stTableSettings;
 enum CONSOLE_FONT_COLORS HIGHLIGHT_ITEM_COLOR;
 u16 intCiosAlternativeRevisions[3];
@@ -221,7 +221,7 @@ struct stConsoleCursorLocation stTexteLocation;
 struct stBlinkTextsGroup stBlinkTexts;
 struct stCommandsBar stCommandsBarSettings;
 unsigned long long lngScheduledCios;
-	atexit(onExit);
+	//atexit(onExit);
 #if TESTING_CODE
     initConsole(NULL,GUI_BACKGROUND_COLOR,"Loading, please wait...",0,0,1,1);
 #else
@@ -287,12 +287,12 @@ unsigned long long lngScheduledCios;
         printBreakLines(' ',intConsoleColumnsCount,"THIS PACKAGE COMES WITH ABSOLUTELY NO WARRANTY, NEITHER STATED NOR IMPLIED. NO ONE BUT YOURSELF IS TO BE HELD RESPONSIBLE FOR ANY DAMAGE THIS MAY CAUSE TO YOUR NINTENDO WII CONSOLE! USE ON YOUR OWN RISK!");
         printf("\n\n");
         printStyledText(-1,-1,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,&stTexteLocation,"[*] CREDITS\n");
-        printf("Coders: Dragbe, Xflak, Davebaol, Xabby666, Waninkoko.\n");
-        printf("Committers: Nutnut.\n");
-        printf("Contributors: Sinedmax, Whynot, RobGee789, Damysteryman, WiiD, Rodries.\n");
+        printf("Project members: Dragbe, Nutnut, Lola, Abdeljutsu, WiiD, RobGee789.\n");
+        printf("Initiators: Xflak, Davebaol, Xabby666, Waninkoko.\n");
+        printf("Contributors: Sinedmax, Whynot, Damysteryman, Rodries.\n");
         printf("Credits: Team Twiizers, Hermes, Arikado, Shagkur, WinterMute, Wiipower.\n\n");
         drawCommandsBar(0,true,&stCommandsBarSettings);
-        setStatusBar(&stCommandsBarSettings,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
+        setStatusBar(&stCommandsBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
         SYS_SetResetCallback(onResetButtonDown);
         if (waitPadsKeyPressed("Press any button to continue...\n")) {
             strMountedDevice=mountFatDevice(chFatDevicesPriority);
@@ -365,15 +365,15 @@ unsigned long long lngScheduledCios;
                                         addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[4],1,": Continue");
                                         addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[5],1,": Exit");
                                         addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[2],2,": IOS selection");
-                                        setStatusBar(&stCommandsBarSettings,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
+                                        setStatusBar(&stCommandsBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
                                     }
                                 }
                                 while ((pressed!=PAD_BUTTON_A) && (pressed!=PAD_BUTTON_B))  {
                                     if (chWorkingCios) {
-                                        printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,"<IOS %i>",chWorkingCios);
+                                        printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,&stTexteLocation,"<IOS %i>",chWorkingCios);
                                     }
                                     else {
-                                        printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,"<IOS %i+AHBPROT>",IOS_GetVersion());
+                                        printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,&stTexteLocation,"<IOS %i+AHBPROT>",IOS_GetVersion());
                                     }
                                     VIDEO_WaitVSync();
                                     if ((pressed=getPadsKeyPressed(&intExpectedPadsKeys[2],4,true))) {
@@ -398,7 +398,7 @@ unsigned long long lngScheduledCios;
                                             varout=0;
                                         }
                                         else {
-                                            setStatusBar(&stCommandsBarSettings,"Reloading IOS %i...",chWorkingCios);
+                                            setStatusBar(&stCommandsBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Reloading IOS %i...",chWorkingCios);
                                             unmountNandFs();
                                             deInitNetwork();
                                             unmountFatDevice(strMountedDevice);
@@ -442,55 +442,67 @@ unsigned long long lngScheduledCios;
                                             drawLabel(-1,-1,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"\n Select cIOS revision",intConsoleColumnsCount-22,&stLabelSettings[4],&stTexteLocation);
                                             printStyledText(-1,-1,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,&stTexteLocation,"\n\n[*] NOTES");
                                             drawLabel(-1,-1,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"\nOffline mode: ",intConsoleColumnsCount-15,&stLabelSettings[5],&stTexteLocation);
-                                            drawLabel(-1,-1,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"\nSlot Status: ",intConsoleColumnsCount-14,&stLabelSettings[6],&stTexteLocation);
-                                            drawLabel(-1,-1,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"\nWarning: ",intConsoleColumnsCount-10,&stLabelSettings[7],&stTexteLocation);
+                                            drawLabel(-1,-1,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"\nWarning(s): ",intConsoleColumnsCount-13,&stLabelSettings[6],&stTexteLocation);
+                                            drawLabel(-1,-1,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"\n            ",intConsoleColumnsCount-13,&stLabelSettings[7],&stTexteLocation);
+                                            drawLabel(-1,-1,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"\n            ",intConsoleColumnsCount-13,&stLabelSettings[8],&stTexteLocation);
                                             printf("\n");
                                             drawCommandsBar(8,true,&stCommandsBarSettings);
                                             addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[4],1,": Continue");
                                             addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[5],1,": Exit");
                                             addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[2],2,": Change values");
                                             addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[0],2,": Navigation");
-                                            addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[6],1,": Add cIOS to queue");
-                                            addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[9],1,": Reset installation queue");
+                                            addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[6],1,": Add cIOS to batch");
+                                            addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[9],1,": Disable batch mode");
                                             addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[7],1,": Save the NUS script");
-                                            addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[8],1,": Save the queue settings");
-                                            setStatusBar(&stCommandsBarSettings,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
+                                            addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[8],1,": Save the batch settings");
+                                            setStatusBar(&stCommandsBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
                                         }
                                     }
                                     if (chLevelIndex==2) {
                                         while ((pressed!=PAD_BUTTON_A) && (pressed!=PAD_BUTTON_B)) {
                                             for (intTempValue=0;intTempValue<4;intTempValue++) {
-                                                printLabel(stLabelSettings[0].stLabelLocation.intRow+intTempValue,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,(intTempValue==intActiveMenu)?">":" ");
+                                                printLabel(stLabelSettings[0].stLabelLocation.intRow+intTempValue,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,&stTexteLocation,(intTempValue==intActiveMenu)?">":" ");
                                             }
-                                            printListItem(stLabelSettings[1].stLabelLocation.intRow,stLabelSettings[1].stLabelLocation.intColumn,"",intSelectedCios,intCiosCount,CONSOLE_FONT_BLACK,"","",intConsoleColumnsCount,"%s",stCiosMaps[intSelectedCios].strGroupName);
-                                            printListItem(stLabelSettings[2].stLabelLocation.intRow,stLabelSettings[2].stLabelLocation.intColumn,"",chSelectedCiosBase,stCiosMaps[intSelectedCios].chCiosCount,CONSOLE_FONT_BLACK,"","",intConsoleColumnsCount,"%d",stCiosMaps[intSelectedCios].stCios[chSelectedCiosBase].stBase.chBase);
-                                            HIGHLIGHT_ITEM_COLOR=getIosTypeColor(stSlotsMap[chSlots[chSelectedCiosSlot]].chIosType);
-                                            printListItem(stLabelSettings[3].stLabelLocation.intRow,stLabelSettings[3].stLabelLocation.intColumn,"",chSelectedCiosSlot,chSlotsCount,HIGHLIGHT_ITEM_COLOR,"","",intConsoleColumnsCount,"%d",chSlots[chSelectedCiosSlot]);
-                                            printListItem(stLabelSettings[4].stLabelLocation.intRow,stLabelSettings[4].stLabelLocation.intColumn,"",chSelectedCiosRevision,chCiosAlternativeRevisionsCount,CONSOLE_FONT_BLACK,"","",intConsoleColumnsCount,"%d",intCiosAlternativeRevisions[chSelectedCiosRevision]);
-                                            printLabel(stLabelSettings[5].stLabelLocation.intRow,stLabelSettings[5].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[5].chLabelSize,"IOS%d-64-v%d.wad file required (downloadable with NUSD)",stCiosMaps[intSelectedCios].stCios[chSelectedCiosBase].stBase.chBase,stCiosMaps[intSelectedCios].stCios[chSelectedCiosBase].stBase.intBaseRevision);
-                                            switch (stSlotsMap[chSlots[chSelectedCiosSlot]].chIosType) {
-                                                case NONE_IOS:
-                                                    printLabel(stLabelSettings[6].stLabelLocation.intRow,stLabelSettings[6].stLabelLocation.intColumn,HIGHLIGHT_ITEM_COLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[6].chLabelSize,"Slot %d free",chSlots[chSelectedCiosSlot]);
-                                                    break;
-                                                case STUB_IOS:
-                                                    printLabel(stLabelSettings[6].stLabelLocation.intRow,stLabelSettings[6].stLabelLocation.intColumn,HIGHLIGHT_ITEM_COLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[6].chLabelSize,"The IOS STUB detected in the slot %d will be overwritten",chSlots[chSelectedCiosSlot]);
-                                                    break;
-                                                default:
-                                                    printLabel(stLabelSettings[6].stLabelLocation.intRow,stLabelSettings[6].stLabelLocation.intColumn,HIGHLIGHT_ITEM_COLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[6].chLabelSize,"The (c)IOS detected in the slot %d will be overwritten",chSlots[chSelectedCiosSlot]);
-                                            }
-                                            if (isFreeSlotSetting(chSlots[chSelectedCiosSlot],&stCiosInstallMap)) {
-                                                if ((intReturnValue=getSelectedCiosCmp(stCiosMaps[intSelectedCios].strGroupName,stCiosMaps[intSelectedCios].stCios[chSelectedCiosBase].stBase.chBase,intCiosAlternativeRevisions[chSelectedCiosRevision],&stCiosInstallMap))==DISTINCT_CIOS) {
-                                                    printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"None");
-                                                }
-                                                else {
-                                                    intReturnValue=abs(intReturnValue)-1;
-                                                    printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"cIOS already added in queue with revision %d and slot %d",stCiosInstallMap.stCiosInstallSettings[intReturnValue].intRevision,intReturnValue+CIOS_BASE_SLOT);
-                                                }
+                                            intTempValue=6;
+                                            if ((intReturnValue=getSelectedCiosCmp(stCiosMaps[intSelectedCios].strGroupName,stCiosMaps[intSelectedCios].stCios[chSelectedCiosBase].stBase.chBase,intCiosAlternativeRevisions[chSelectedCiosRevision],&stCiosInstallMap))==DISTINCT_CIOS) {
+                                                HIGHLIGHT_ITEM_COLOR=CONSOLE_FONT_BLACK;
                                             }
                                             else {
-                                                printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"Slot %d already used in queue settings",chSlots[chSelectedCiosSlot]);
+                                                intReturnValue=abs(intReturnValue)-1;
+                                                printLabel(stLabelSettings[intTempValue].stLabelLocation.intRow,stLabelSettings[intTempValue].stLabelLocation.intColumn,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[intTempValue].chLabelSize,&stTexteLocation,"cIOS already added in batch with revision %d and slot %d",stCiosInstallMap.stCiosInstallSettings[intReturnValue].intRevision,intReturnValue+CIOS_BASE_SLOT);
+                                                HIGHLIGHT_ITEM_COLOR=CONSOLE_FONT_MAGENTA;
+                                                intTempValue++;
                                             }
-                                            setStatusBar(&stCommandsBarSettings,"Current IOS: %d v%d, Installation queue: %d cIOS",IOS_GetVersion(),IOS_GetRevision(),stCiosInstallMap.chCiosCount);
+                                            printListItem(stLabelSettings[1].stLabelLocation.intRow,stLabelSettings[1].stLabelLocation.intColumn,"",intSelectedCios,intCiosCount,HIGHLIGHT_ITEM_COLOR,"","",intConsoleColumnsCount,"%s",stCiosMaps[intSelectedCios].strGroupName);
+                                            printListItem(stLabelSettings[2].stLabelLocation.intRow,stLabelSettings[2].stLabelLocation.intColumn,"",chSelectedCiosBase,stCiosMaps[intSelectedCios].chCiosCount,HIGHLIGHT_ITEM_COLOR,"","",intConsoleColumnsCount,"%d",stCiosMaps[intSelectedCios].stCios[chSelectedCiosBase].stBase.chBase);
+                                            if (isFreeSlotSetting(chSlots[chSelectedCiosSlot],&stCiosInstallMap)) {
+                                                HIGHLIGHT_ITEM_COLOR=CONSOLE_FONT_BLACK;
+                                            }
+                                            else {
+                                                printLabel(stLabelSettings[intTempValue].stLabelLocation.intRow,stLabelSettings[intTempValue].stLabelLocation.intColumn,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[intTempValue].chLabelSize,&stTexteLocation,"Slot %d already used in batch settings",chSlots[chSelectedCiosSlot]);
+                                                HIGHLIGHT_ITEM_COLOR=CONSOLE_FONT_MAGENTA;
+                                                intTempValue++;
+                                            }
+                                            if ((intReturnValue=getIosTypeColor(stSlotsMap[chSlots[chSelectedCiosSlot]].chIosType))!=CONSOLE_FONT_BLACK) {
+                                                HIGHLIGHT_ITEM_COLOR=intReturnValue;
+                                            }
+                                            printListItem(stLabelSettings[3].stLabelLocation.intRow,stLabelSettings[3].stLabelLocation.intColumn,"",chSelectedCiosSlot,chSlotsCount,HIGHLIGHT_ITEM_COLOR,"","",intConsoleColumnsCount,"%d",chSlots[chSelectedCiosSlot]);
+                                            printListItem(stLabelSettings[4].stLabelLocation.intRow,stLabelSettings[4].stLabelLocation.intColumn,"",chSelectedCiosRevision,chCiosAlternativeRevisionsCount,CONSOLE_FONT_BLACK,"","",intConsoleColumnsCount,"%d",intCiosAlternativeRevisions[chSelectedCiosRevision]);
+                                            printLabel(stLabelSettings[5].stLabelLocation.intRow,stLabelSettings[5].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[5].chLabelSize,&stTexteLocation,"IOS%d-64-v%d.wad file required (downloadable with NUSD)",stCiosMaps[intSelectedCios].stCios[chSelectedCiosBase].stBase.chBase,stCiosMaps[intSelectedCios].stCios[chSelectedCiosBase].stBase.intBaseRevision);
+                                            if (stSlotsMap[chSlots[chSelectedCiosSlot]].chIosType>NONE_IOS) {
+                                                printLabel(stLabelSettings[intTempValue].stLabelLocation.intRow,stLabelSettings[intTempValue].stLabelLocation.intColumn,HIGHLIGHT_ITEM_COLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[intTempValue].chLabelSize,&stTexteLocation,"%s detected in the slot %d will be overwritten",(stSlotsMap[chSlots[chSelectedCiosSlot]].chIosType==STUB_IOS)?"The IOS STUB":"The (c)IOS",chSlots[chSelectedCiosSlot]);
+                                                intTempValue++;
+                                            }
+                                            if (stCiosInstallMap.chCiosCount) {
+                                                setStatusBar(&stCommandsBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Current IOS: %d v%d, Batch mode: %d cIOS",IOS_GetVersion(),IOS_GetRevision(),stCiosInstallMap.chCiosCount);
+                                            }
+                                            else {
+                                                setStatusBar(&stCommandsBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
+                                            }
+                                            while (intTempValue<9) {
+                                                printLabel(stLabelSettings[intTempValue].stLabelLocation.intRow,stLabelSettings[intTempValue].stLabelLocation.intColumn,CONSOLE_FONT_BLACK,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[intTempValue].chLabelSize,&stTexteLocation,(intTempValue==6)?"none":"");
+                                                intTempValue++;
+                                            }
                                             VIDEO_WaitVSync();
                                             pressed=getPadsKeyPressed(&intExpectedPadsKeys[0],10,true);
                                             if (pressed) {
@@ -500,47 +512,44 @@ unsigned long long lngScheduledCios;
                                                         stCiosInstallMap.chCiosCount=0;
                                                         break;
                                                     case PAD_BUTTON_Y:
-                                                        setStatusBar(&stCommandsBarSettings,"Saving the NUS script (%s)...",NUS_SCRIPT_FILE);
                                                         if (stCiosInstallMap.chCiosCount) {
                                                             if (*strMountedDevice) {
-                                                                printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,CONSOLE_FONT_GREEN,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"%d item(s) saved in the %s:/%s file",writeNusScriptFile(&stCiosInstallMap,strMountedDevice),strMountedDevice,NUS_SCRIPT_FILE);
+                                                                setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_GREEN,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"%d item(s) saved in the %s:/%s file",writeNusScriptFile(&stCiosInstallMap,strMountedDevice),strMountedDevice,NUS_SCRIPT_FILE);
                                                             }
                                                             else {
-                                                                printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,CONSOLE_FONT_RED,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"No FAT device detected");
+                                                                setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_RED,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"No FAT device detected");
                                                             }
                                                         }
                                                         else {
-                                                            printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"Nothing to save");
+                                                            setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Nothing to save");
                                                         }
                                                         sleep(3);
                                                         break;
                                                     case PAD_BUTTON_X:
-                                                        setStatusBar(&stCommandsBarSettings,"Saving the queue settings (%s)...",CIOS_CONFIG_FILE);
                                                         if (stCiosInstallMap.chCiosCount) {
                                                             if (*strMountedDevice) {
-                                                                printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,CONSOLE_FONT_GREEN,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"%d cIOS saved in the %s:/%s file",writeCiosConfigFile(&stCiosInstallMap,strMountedDevice),strMountedDevice,CIOS_CONFIG_FILE);
+                                                                setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_GREEN,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"%d cIOS saved in the %s:/%s file",writeCiosConfigFile(&stCiosInstallMap,strMountedDevice),strMountedDevice,CIOS_CONFIG_FILE);
                                                             }
                                                             else {
-                                                                printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,CONSOLE_FONT_RED,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"No FAT device detected");
+                                                                setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_RED,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"No FAT device detected");
                                                             }
 
                                                         }
                                                         else {
-                                                            printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"Nothing to save");
+                                                            setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Nothing to save");
                                                         }
                                                         sleep(3);
                                                         break;
                                                     case PAD_BUTTON_START:
-                                                        setStatusBar(&stCommandsBarSettings,"Adding cIOS in queue...");
                                                         if (stCiosInstallMap.chCiosCount==addScheduledCios(&stCiosMaps[intSelectedCios].stCios[chSelectedCiosBase],stCiosMaps[intSelectedCios].strGroupName,&chSlots[chSelectedCiosSlot],intCiosAlternativeRevisions[chSelectedCiosRevision],&stCiosInstallMap)) {
-                                                            printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"Slot %d already used in queue settings",chSlots[chSelectedCiosSlot]);
+                                                            setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Slot %d already used in batch settings",chSlots[chSelectedCiosSlot]);
                                                         }
                                                         else if (stCiosInstallMap.chCiosCount) {
-                                                            printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,CONSOLE_FONT_GREEN,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"cIOS%d %s base %d rev%d added in queue",chSlots[chSelectedCiosSlot],stCiosMaps[intSelectedCios].strGroupName,stCiosMaps[intSelectedCios].stCios[chSelectedCiosBase].stBase.chBase,intCiosAlternativeRevisions[chSelectedCiosRevision]);
+                                                            setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_GREEN,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"%s base %d rev%d added in batch",stCiosMaps[intSelectedCios].strGroupName,stCiosMaps[intSelectedCios].stCios[chSelectedCiosBase].stBase.chBase,intCiosAlternativeRevisions[chSelectedCiosRevision]);
                                                             chCiosAlternativeRevisionsCount=setFreeCiosSettings(&intSelectedCios,&chSelectedCiosBase,&chSelectedCiosSlot,chSlots,chSlotsCount,&intCiosAlternativeRevisions[0],&chSelectedCiosRevision,stCiosMaps,intCiosCount,&stCiosInstallMap);
                                                         }
                                                         else {
-                                                            printLabel(stLabelSettings[7].stLabelLocation.intRow,stLabelSettings[7].stLabelLocation.intColumn,CONSOLE_FONT_RED,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[7].chLabelSize,"Unable to add the selected cIOS in queue");
+                                                            setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_RED,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Unable to add the selected cIOS in batch");
                                                         }
                                                         sleep(3);
                                                         break;
@@ -616,9 +625,9 @@ unsigned long long lngScheduledCios;
                                             for (intTempValue=0;intTempValue<CIOS_SLOTS_COUNT;intTempValue++) {
                                                 intReturnValue=CIOS_BASE_SLOT+intTempValue;
                                                 HIGHLIGHT_ITEM_COLOR=getIosTypeColor(stSlotsMap[intReturnValue].chIosType);
-                                                updateTableCell(intTempValue/SLOTS_TABLE_COLUMNS,intTempValue % SLOTS_TABLE_COLUMNS,HIGHLIGHT_ITEM_COLOR,DEFAULT_FONT_FGCOLOR,CONSOLE_FONT_BOLD,ALIGN_CENTER,ALIGN_MIDDLE,&stTableSettings,&stTexteLocation,"2%02d",intTempValue);
+                                                updateTableCell(intTempValue/SLOTS_TABLE_COLUMNS,intTempValue % SLOTS_TABLE_COLUMNS,HIGHLIGHT_ITEM_COLOR,DEFAULT_FONT_FGCOLOR,CONSOLE_FONT_BOLD,ALIGN_CENTER,ALIGN_MIDDLE,&stTableSettings,&stTexteLocation,"%03d",intReturnValue);
                                                 if (!isFreeSlotSetting(intReturnValue,&stCiosInstallMap)) {
-                                                    printBlinkText(stTexteLocation.intRow,stTexteLocation.intColumn,HIGHLIGHT_ITEM_COLOR,DEFAULT_FONT_FGCOLOR,CONSOLE_FONT_BOLD,500,&stBlinkTexts.stBlinkTexts[stBlinkTexts.chBlinkTextsCount],"2%02d",intTempValue);
+                                                    printBlinkText(stTexteLocation.intRow,stTexteLocation.intColumn,HIGHLIGHT_ITEM_COLOR,DEFAULT_FONT_FGCOLOR,CONSOLE_FONT_BOLD,500,&stBlinkTexts.stBlinkTexts[stBlinkTexts.chBlinkTextsCount],"%03d",intReturnValue);
                                                     resetSavedPreviousCursorPosition();
                                                     stBlinkTexts.chBlinkTextsCount=stBlinkTexts.chBlinkTextsCount+1;
                                                 }
@@ -631,31 +640,28 @@ unsigned long long lngScheduledCios;
                                             printBlinkText(-1,-1,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,CONSOLE_FONT_BOLD,500,&stBlinkTexts.stBlinkTexts[stBlinkTexts.chBlinkTextsCount],"2XX");
                                             stBlinkTexts.chBlinkTextsCount=stBlinkTexts.chBlinkTextsCount+1;
                                             printf(" (c)IOS to install\n\n");
-                                            drawLabel(-1,-1,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Existing (c)IOS revision: ",5,&stLabelSettings[0],&stTexteLocation);
-                                            drawLabel(-1,35,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Installation: ",intConsoleColumnsCount-50,&stLabelSettings[1],&stTexteLocation);
+                                            drawLabel(-1,-1,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Slot infos: ",intConsoleColumnsCount-13,&stLabelSettings[0],&stTexteLocation);
                                             printf("\n");
                                             drawCommandsBar(4,true,&stCommandsBarSettings);
                                             addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[4],1,": Install");
                                             addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[5],1,": Back");
                                             addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[0],4,": Slot selection");
                                             addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[6],1,": Remove cIOS installation");
-                                            setStatusBar(&stCommandsBarSettings,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
+                                            setStatusBar(&stCommandsBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
                                             runBlinkTexts(&stBlinkTexts);
                                             while ((pressed!=PAD_BUTTON_A) && (pressed!=PAD_BUTTON_B)) {
                                                 while (LWP_MutexLock(stBlinkTexts.mtxThread)) {}
                                                 intTempValue=CIOS_BASE_SLOT+stTableSettings.chSelectedCellRow*SLOTS_TABLE_COLUMNS+stTableSettings.chSelectedCellColumn;
                                                 if (stSlotsMap[intTempValue].chIosType) {
-                                                    printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,"%d",stSlotsMap[intTempValue].intIosRevision);
+                                                    printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,&stTexteLocation,"(c)IOS%d rev%d ",intTempValue,stSlotsMap[intTempValue].intIosRevision);
                                                 }
                                                 else {
-                                                    printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,"None");
+                                                    printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,&stTexteLocation,"free slot ");
                                                 }
-                                                if (isFreeSlotSetting(intTempValue,&stCiosInstallMap)) {
-                                                    printLabel(stLabelSettings[1].stLabelLocation.intRow,stLabelSettings[1].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[1].chLabelSize,"None");
-                                                }
-                                                else {
+                                                if (!isFreeSlotSetting(intTempValue,&stCiosInstallMap)) {
                                                     intReturnValue=intTempValue-CIOS_BASE_SLOT;
-                                                    printLabel(stLabelSettings[1].stLabelLocation.intRow,stLabelSettings[1].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[1].chLabelSize,"%s base %d rev%d",stCiosInstallMap.stCiosInstallSettings[intReturnValue].strCiosName,stCiosInstallMap.stCiosInstallSettings[intReturnValue].stCios->stBase.chBase,stCiosInstallMap.stCiosInstallSettings[intReturnValue].intRevision);
+                                                    printStyledText(stTexteLocation.intRow,stTexteLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,&stTexteLocation,"> %s base %d rev%d",stCiosInstallMap.stCiosInstallSettings[intReturnValue].strCiosName,stCiosInstallMap.stCiosInstallSettings[intReturnValue].stCios->stBase.chBase,stCiosInstallMap.stCiosInstallSettings[intReturnValue].intRevision);
+                                                    resetSavedPreviousCursorPosition();
                                                 }
                                                 VIDEO_WaitVSync();
                                                 LWP_MutexUnlock(stBlinkTexts.mtxThread);
@@ -712,7 +718,7 @@ unsigned long long lngScheduledCios;
                                                     drawCommandsBar(0,true,&stCommandsBarSettings);
                                                     intReturnValue=intTempValue+CIOS_BASE_SLOT;
                                                     chLevelIndex++;
-                                                    setStatusBar(&stCommandsBarSettings,"Installing cIOS%d %s base %d rev%d (%d/%d)...",intReturnValue,stCiosInstallMap.stCiosInstallSettings[intTempValue].strCiosName,stCiosInstallMap.stCiosInstallSettings[intTempValue].stCios->stBase.chBase,stCiosInstallMap.stCiosInstallSettings[intTempValue].intRevision,chLevelIndex,stCiosInstallMap.chCiosCount);
+                                                    setStatusBar(&stCommandsBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Installing %s base %d rev%d into slot %d (%d/%d)...",stCiosInstallMap.stCiosInstallSettings[intTempValue].strCiosName,stCiosInstallMap.stCiosInstallSettings[intTempValue].stCios->stBase.chBase,stCiosInstallMap.stCiosInstallSettings[intTempValue].intRevision,intReturnValue,chLevelIndex,stCiosInstallMap.chCiosCount);
                                                     printLevelsBar(-1,-1,CONSOLE_FONT_CYAN,CONSOLE_FONT_GREEN,4,6,&stTexteLocation,"WELCOME","WORKING IOS","CIOS SETTINGS","SUMMARY","INSTALLATION","LOG");
                                                     printf("\n\n");
                                                     if ((varout=patchmii(stCiosInstallMap.stCiosInstallSettings[intTempValue].stCios,intReturnValue,stCiosInstallMap.stCiosInstallSettings[intTempValue].intRevision,IOS_MAJOR_TITLEID,strCacheFolder,NAND_TEMP_DIRECTORY))) {
@@ -731,7 +737,8 @@ unsigned long long lngScheduledCios;
                                                 printStyledText(-1,-1,DEFAULT_FONT_BGCOLOR,CONSOLE_FONT_YELLOW,CONSOLE_FONT_BOLD,&stTexteLocation,"[*] INSTALLATION MAP");
                                                 drawAlignedTable(ALIGN_CENTER,ALIGN_TOP,3,0,getConsoleRowsCount()-1,intConsoleColumnsCount,SLOTS_TABLE_COLUMNS,SLOTS_TABLE_ROWS,SLOTS_TABLE_CELL_WIDTH,SLOTS_TABLE_CELL_HEIGHT,SINGLE_BORDER,CONSOLE_FONT_WHITE,DEFAULT_FONT_BGCOLOR,&stTableSettings);
                                                 for (intTempValue=0;intTempValue<CIOS_SLOTS_COUNT;intTempValue++) {
-                                                    updateTableCell(intTempValue/SLOTS_TABLE_COLUMNS,intTempValue % SLOTS_TABLE_COLUMNS,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,CONSOLE_FONT_BOLD,ALIGN_CENTER,ALIGN_MIDDLE,&stTableSettings,&stTexteLocation,"2%02d",intTempValue);
+                                                    intReturnValue=CIOS_BASE_SLOT+intTempValue;
+                                                    updateTableCell(intTempValue/SLOTS_TABLE_COLUMNS,intTempValue % SLOTS_TABLE_COLUMNS,DEFAULT_FONT_BGCOLOR,(stSlotsMap[intReturnValue].chIosType)?CONSOLE_FONT_YELLOW:DEFAULT_FONT_FGCOLOR,CONSOLE_FONT_BOLD,ALIGN_CENTER,ALIGN_MIDDLE,&stTableSettings,&stTexteLocation,"%03d",intReturnValue);
                                                 }
                                                 HIGHLIGHT_ITEM_COLOR=CONSOLE_FONT_GREEN;
                                                 lngScheduledCios=stCiosInstallMap.lngScheduledCios;
@@ -751,8 +758,7 @@ unsigned long long lngScheduledCios;
                                                     else {
                                                         HIGHLIGHT_ITEM_COLOR=CONSOLE_FONT_MAGENTA;
                                                     }
-                                                    updateTableCell(intTempValue/SLOTS_TABLE_COLUMNS,intTempValue % SLOTS_TABLE_COLUMNS,HIGHLIGHT_ITEM_COLOR,DEFAULT_FONT_FGCOLOR,CONSOLE_FONT_BOLD,ALIGN_CENTER,ALIGN_MIDDLE,&stTableSettings,&stTexteLocation,"2%02d",intTempValue);
-                                                    resetSavedPreviousCursorPosition();
+                                                    updateTableCell(intTempValue/SLOTS_TABLE_COLUMNS,intTempValue % SLOTS_TABLE_COLUMNS,HIGHLIGHT_ITEM_COLOR,(stSlotsMap[intReturnValue].chIosType)?CONSOLE_FONT_YELLOW:DEFAULT_FONT_FGCOLOR,CONSOLE_FONT_BOLD,ALIGN_CENTER,ALIGN_MIDDLE,&stTableSettings,&stTexteLocation,"%03d",intReturnValue);
                                                     lngScheduledCios=lngScheduledCios-(unsigned long long) pow(2,intTempValue);
                                                 }
                                                 selectTableCell(0,0,CONSOLE_FONT_YELLOW,CONSOLE_FONT_YELLOW,&stTableSettings);
@@ -764,24 +770,64 @@ unsigned long long lngScheduledCios;
                                                 printf(" FAILED\n\n");
                                                 drawLabel(-1,-1,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Installed cIOS: ",intConsoleColumnsCount-17,&stLabelSettings[0],&stTexteLocation);
                                                 printf("\n");
-                                                drawCommandsBar(3,true,&stCommandsBarSettings);
+                                                if (haveNandAccess()) {
+                                                    drawCommandsBar(4,true,&stCommandsBarSettings);
+                                                    addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[6],1,": Uninstall (c)IOS");
+                                                }
+                                                else {
+                                                    drawCommandsBar(3,true,&stCommandsBarSettings);
+                                                }
                                                 addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[4],1,": Continue");
                                                 addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[5],1,": Exit");
                                                 addCommandsBarItem(&stCommandsBarSettings,&intExpectedPadsKeys[0],4,": Slot selection");
-                                                setStatusBar(&stCommandsBarSettings,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
+                                                setStatusBar(&stCommandsBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
                                                 pressed=0;
                                                 while ((pressed!=PAD_BUTTON_A) && (pressed!=PAD_BUTTON_B)) {
                                                     intReturnValue=stTableSettings.chSelectedCellRow*SLOTS_TABLE_COLUMNS+stTableSettings.chSelectedCellColumn;
-                                                    if (isFreeSlotSetting(CIOS_BASE_SLOT+intReturnValue,&stCiosInstallMap)) {
-                                                        printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,"None");
+                                                    intTempValue=CIOS_BASE_SLOT+intReturnValue;
+                                                    if (isFreeSlotSetting(intTempValue,&stCiosInstallMap)) {
+                                                        if (stSlotsMap[intTempValue].chIosType) {
+                                                            printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,&stTexteLocation,"(c)IOS%d rev%d ",intTempValue,stSlotsMap[intTempValue].intIosRevision);
+                                                            if (stSlotsMap[intTempValue].chIosType==STUB_IOS) {
+                                                                printLocatedText(stTexteLocation.intRow,stTexteLocation.intColumn,&stTexteLocation,"(STUB)");
+                                                                resetSavedPreviousCursorPosition();
+                                                            }
+                                                        }
+                                                        else {
+                                                            printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,&stTexteLocation,"None");
+                                                        }
                                                     }
                                                     else {
-                                                        printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,"%s base %d rev%d",stCiosInstallMap.stCiosInstallSettings[intReturnValue].strCiosName,stCiosInstallMap.stCiosInstallSettings[intReturnValue].stCios->stBase.chBase,stCiosInstallMap.stCiosInstallSettings[intReturnValue].intRevision);
+                                                        printLabel(stLabelSettings[0].stLabelLocation.intRow,stLabelSettings[0].stLabelLocation.intColumn,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,stLabelSettings[0].chLabelSize,&stTexteLocation,"%s base %d rev%d",stCiosInstallMap.stCiosInstallSettings[intReturnValue].strCiosName,stCiosInstallMap.stCiosInstallSettings[intReturnValue].stCios->stBase.chBase,stCiosInstallMap.stCiosInstallSettings[intReturnValue].intRevision);
                                                     }
                                                     VIDEO_WaitVSync();
-                                                    pressed=getPadsKeyPressed(&intExpectedPadsKeys[0],6,true);
+                                                    pressed=getPadsKeyPressed(&intExpectedPadsKeys[0],stCommandsBarSettings.chCommandsCount+3,true);
                                                     if (pressed) {
                                                         switch (pressed) {
+                                                            case PAD_BUTTON_START:
+                                                                if (stSlotsMap[intTempValue].chIosType) {
+                                                                    if ((intReturnValue=uninstallTitle(IOS_MAJOR_TITLEID,intTempValue))) {
+                                                                        if (intReturnValue>0) {
+                                                                            setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Critical (c)IOS uninstallation cancelled");
+                                                                        }
+                                                                        else {
+                                                                            setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_RED,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"(c)IOS uninstallation failed");
+                                                                        }
+                                                                    }
+                                                                    else {
+                                                                        setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_GREEN,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"(c)IOS uninstallation successful");
+                                                                        stSlotsMap[intTempValue].chIosType=NONE_IOS;
+                                                                        stSlotsMap[intTempValue].intIosRevision=0;
+                                                                        intReturnValue=intTempValue-CIOS_BASE_SLOT;
+                                                                        updateTableCell(intReturnValue/SLOTS_TABLE_COLUMNS,intReturnValue % SLOTS_TABLE_COLUMNS,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,CONSOLE_FONT_BOLD,ALIGN_CENTER,ALIGN_MIDDLE,&stTableSettings,&stTexteLocation,"%03d",intTempValue);
+                                                                    }
+                                                                }
+                                                                else {
+                                                                    setStatusBar(&stCommandsBarSettings,CONSOLE_FONT_MAGENTA,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"No (c)IOS to uninstall");
+                                                                }
+                                                                sleep(3);
+                                                                setStatusBar(&stCommandsBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Current IOS: %d v%d",IOS_GetVersion(),IOS_GetRevision());
+                                                                break;
                                                             case PAD_BUTTON_DOWN:
                                                                 selectTableCell(stTableSettings.chSelectedCellRow+1,stTableSettings.chSelectedCellColumn,CONSOLE_FONT_YELLOW,CONSOLE_FONT_YELLOW,&stTableSettings);
                                                                 break;
@@ -841,11 +887,13 @@ unsigned long long lngScheduledCios;
                 strMountedDevice=NULL;
             }
         }
-        setStatusBar(&stCommandsBarSettings,"Exiting...");
+        setStatusBar(&stCommandsBarSettings,DEFAULT_FONT_BGCOLOR,DEFAULT_FONT_FGCOLOR,DEFAULT_FONT_WEIGHT,"Exiting...");
         WPAD_Shutdown();
     }
     else {
         printDebugMsg(ERROR_DEBUG_MESSAGE,"\nError getting slots map\n");
     }
-	return varout;
+    fflush(stdout);
+    VIDEO_WaitVSync();
+    return varout;
 }

@@ -6,6 +6,17 @@
 #include "nand.h"
 #include "debug.h"
 #include "title.h"
+bool haveNandAccess() {
+bool varout=true;
+int intFd;
+    if ((intFd=ISFS_Open("/title/00000001/00000002/content/title.tmd",ISFS_OPEN_RW))<0) {
+        varout=false;
+    }
+    else {
+        ISFS_Close(intFd);
+    }
+    return varout;
+}
 bool existNandFile(const char *strFileName) {
 bool varout=true;
 int fd;

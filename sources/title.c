@@ -12,6 +12,8 @@
 #include "nand.h"
 #include "sha1.h"
 #include "macro.h"
+#include "libios.h"
+#include "stubs.h"
 #include "d2x-cios-installer.h"
 const u8 aesCommonKey[16]={0xeb,0xe4,0x2a,0x22,0x5e,0x85,0x93,0xe4,0x48,0xd9,0xc5,0x45,0x73,0x81,0xaa,0xf7};
 u32 getMajorTitleId(u64 intTitleId) {
@@ -206,6 +208,16 @@ static char strNandTmdFileName[43];
     snprintf(strNandTmdFileName,sizeof(strNandTmdFileName),"/title/%08x/%08x/content/title.tmd",getMajorTitleId(intTitleId),getMinorTitleId(intTitleId));
     return existNandFile(strNandTmdFileName);
 }
+s32 deleteTicket(u64 intTitleId) {
+static char strNandTicketFileName[30];
+	snprintf(strNandTicketFileName,sizeof(strNandTicketFileName),"/ticket/%08x/%08x.tik",getMajorTitleId(intTitleId),getMinorTitleId(intTitleId));
+	return deleteNandFile(strNandTicketFileName);
+}
+s32 deleteTitle(u64 intTitleId) {
+static char strNandTitleFolder[25];
+	snprintf(strNandTitleFolder,sizeof(strNandTitleFolder),"/title/%08x/%08x",getMajorTitleId(intTitleId),getMinorTitleId(intTitleId));
+	return ISFS_Delete(strNandTitleFolder);
+}
 signed_blob *getStoredTmd(u64 intTitleId,u32 *intTmdSize) {
 signed_blob *varout=NULL;
     if (ES_GetStoredTMDSize(intTitleId,intTmdSize)>=0) {
@@ -223,6 +235,19 @@ signed_blob *varout=NULL;
         }
     }
 	return varout;
+}
+u64 getStoredTitleIos(u64 intTitleId) {
+u64 varout=0;
+signed_blob *sTmd;
+tmd *pTmd;
+u32 intTmdSize;
+    if ((sTmd=getStoredTmd(intTitleId,&intTmdSize))!=NULL) {
+        pTmd=(tmd *) SIGNATURE_PAYLOAD(sTmd);
+        varout=pTmd->sys_version;
+        free(sTmd);
+        sTmd=NULL;
+    }
+    return varout;
 }
 u16 getStoredTitleVersion(u64 intTitleId) {
 u16 varout=0;
@@ -292,3 +317,38 @@ u32 intTmdSize=0;
 	}
 	return varout;
 }
+s32 uninstallTitle(u32 intMajorTitleId,u32 intMinorTitleId) {
+s32 varout=0;
+u64 intTitleId=getFullTitleId(intMajorTitleId,intMinorTitleId);
+    if (intMajorTitleId==1) {
+        if (getStoredTitleIos(0x100000002ULL)==intMinorTitleId) { //SM IOS
+            varout=intMinorTitleId;
+        }
+        else {
+            switch(intMinorTitleId) {
+                case 1: //boot2
+                case 2: //system menu
+                case 242:
+                case 0x100: //BC
+                case 0x101: //MIOS
+                    varout=intMinorTitleId;
+                    break;
+                case 254: //bootmii IOS
+                    if (getStoredTitleVersion(intTitleId)!=intStubsMap[254]) {
+                        varout=intMinorTitleId;
+                    }
+                    break;
+            }
+		}
+	}
+	if (!varout) {
+        if (haveNandAccess()) {
+            varout=-1*deleteTicket(intTitleId)*deleteTitle(intTitleId);
+        }
+        else {
+            varout=-1;
+        }
+	}
+	return varout;
+}
+

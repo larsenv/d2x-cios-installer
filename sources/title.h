@@ -22,9 +22,13 @@ s32 installTicket(const signed_blob *sTik, const signed_blob *sCerts,u32 intCert
 s32 installTmdContents(const signed_blob *sTmd,const signed_blob *sCerts,u32 intCertsSize,const signed_blob *sCrl,u32 intCrlsize,const char *strNandContentLocation,struct stProgressBar *stProgressBarSettings);
 u64 *getTitles(u32 *intTitlesCount);
 bool existTitle(u64 intTitleId);
+s32 deleteTicket(u64 intTitleId);
+s32 deleteTitle(u64 intTitleId);
 signed_blob *getStoredTmd(u64 intTitleId,u32 *intTmdSize);
+u64 getStoredTitleIos(u64 intTitleId);
 u16 getStoredTitleVersion(u64 intTitleId);
 s32 setStoredTitleVersion(u64 intTitleId,u16 intVersion);
 u16 downgradeStoredOverwrittenTitleVersion(u64 intTitleId,u16 intFutureTitleVersion);
 u16 replaceStoredTitleVersion(u64 intTitleId,u16 intTitleVersion,u16 intReplaceTitleVersion);
+s32 uninstallTitle(u32 intMajorTitleId,u32 intMinorTitleId);
 #endif
